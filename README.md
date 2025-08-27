@@ -1,9 +1,11 @@
-pip install -r req.txt
-#DRF installation:
-pip install djangorestframework
-pip install markdown      
-pip install django-filter  
+#DRF installation: 
+uv add djangorestframework 
+uv add markdown
+uv add django-filter
 
-#Swagger installation:
-pip install drf-spectacular
-pip install drf-spectacular[sidecar]
+#Swagger installation: 
+uv add drf-spectacular 
+uv add drf-spectacular[sidecar]
+
+#Env
+ uv add dotenv
