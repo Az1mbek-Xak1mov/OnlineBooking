@@ -1,4 +1,4 @@
-
+pip install -r req.txt
 #DRF installation:
 pip install djangorestframework
 pip install markdown      
