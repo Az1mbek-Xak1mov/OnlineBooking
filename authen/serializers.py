@@ -6,6 +6,7 @@ from rest_framework.serializers import ModelSerializer
 
 from authen.models import User
 
+
 class UserSerializer(ModelSerializer):
     confirm_password = CharField(write_only=True)
     class Meta:
