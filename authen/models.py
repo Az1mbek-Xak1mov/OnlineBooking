@@ -5,8 +5,6 @@ from django.db.models import EmailField, CharField
 from django.db.models.enums import  TextChoices
 
 
-# Create your models here.
-# Create your models here.
 class CustomUserManager(UserManager):
     use_in_migrations = True
 
