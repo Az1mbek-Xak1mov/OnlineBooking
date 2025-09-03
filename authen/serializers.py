@@ -2,9 +2,10 @@ from random import randint
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Serializer
 
 from authen.models import User
+
 
 class UserSerializer(ModelSerializer):
     confirm_password = CharField(write_only=True)
@@ -29,3 +30,8 @@ class UserSerializer(ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+class ListUserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = "fullname" , 'email' , 'first_name'
