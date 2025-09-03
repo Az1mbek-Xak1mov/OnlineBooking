@@ -1,3 +1,4 @@
+from datetime import timedelta
 from os.path import join
 from pathlib import Path
 from dotenv import load_dotenv
@@ -117,14 +118,15 @@ STATIC_ROOT = join(BASE_DIR, 'static')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = join(BASE_DIR, 'media')
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
-    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
