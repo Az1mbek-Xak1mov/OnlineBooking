@@ -75,6 +75,9 @@ class User(AbstractUser):
     class RoleType(TextChoices):
         CUSTOMER = 'customer' , 'Customer'
         PROVIDER = 'provider' , 'Provider'
+        ADMIN = 'admin', 'Admin'
+        MODERATOR = 'moderator', 'Moderator'
+
     username = None
     email = EmailField(unique=True)
     USERNAME_FIELD = 'email'
