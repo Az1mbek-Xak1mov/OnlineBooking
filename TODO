@@ -32,3 +32,62 @@ meni ham yozib quyinglareeeee
 
 
 TZ:
+
+
+1. db togrilash, root togrilash
+
+2. django commands qoshish
+python3 manage.py add-moderator 5
+5ta moderator qoshish kk
+
+3. barcha id lar uuid bolishi kerak
+
+3.5
+service category
+
+
+4. services(name, location) modeli
+service ni adminkada xaritadan manzilni kora olishi kerak
+type (soatlik, navbatlik)
+joylar soni
+
+
+5. schedule
+
+
+6. book (misol uchun stol tennisga band qilish  servisni tanlaydi,
+soatini,
+duration-qancha vaqtligi
+joylar soni
+)
+
+
+
+7. user(provider, customer)
+
+
+
+
+
+
+
+
+
+
+
+task
+1. flake8, isort qoshish
+
+2. register bomaydi, faqat login bor (nomer orqali)
+nomerga sms code yuborish orqali login qilinadi
+
+3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
+(zayavka modeli ochiladi, oqildi oqilmadi[is_read])
+keyin filter qoshiladi (is_read va created_at boyicha)
+
+4. adminkada adminlar, providerlar, customerlar, moderatorlar db alohida chiqishi kk
+
+5. service va category modelini yozish
+
+
+6. barcha id lar uuid bolishi kerak
