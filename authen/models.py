@@ -74,9 +74,11 @@ class CustomUserManager(UserManager):
 
 class User(AbstractUser):
     class RoleType(TextChoices):
-        CUSTOMER = 'customer', 'Customer'
-        PROVIDER = 'provider', 'Provider'
-        # TODO admin, moderator qoshish kk
+        CUSTOMER = 'customer' , 'Customer'
+        PROVIDER = 'provider' , 'Provider'
+        ADMIN = 'admin', 'Admin'
+        MODERATOR = 'moderator', 'Moderator'
+
 
     username = None
     email = EmailField(unique=True)
@@ -86,6 +88,9 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
+    role = CharField(choices=RoleType.choices)
+    first_name = CharField()
+    last_name = CharField()
 
     @property
     def fullname(self):
