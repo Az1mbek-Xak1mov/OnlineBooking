@@ -1,10 +1,10 @@
 import uuid
+
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager, AbstractUser
-from django.db.models import EmailField, CharField
+from django.contrib.auth.models import AbstractUser, UserManager
+from django.db.models import CharField, EmailField
 from django.db.models.enums import TextChoices
 from django.db.models.fields import UUIDField
-
 
 # Create your models here.
 

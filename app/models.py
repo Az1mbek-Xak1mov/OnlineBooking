@@ -1,9 +1,8 @@
 import uuid
 
-from django.db import models # noqa
+from django.db import models  # noqa
 from django.db.models.base import Model
-from django.db.models.fields import UUIDField, DateTimeField
-
+from django.db.models.fields import DateTimeField, UUIDField
 
 # Create your models here.
 

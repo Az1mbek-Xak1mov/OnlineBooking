@@ -1,5 +1,6 @@
 import orjson
 from redis import Redis
+
 from root.settings import REDIS_URL
 
 

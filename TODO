@@ -47,6 +47,6 @@ Abduravshan:
 meni ham yozib quyinglareeeee
 
 
-
-
-TZ:
+DOCS:
+    flake8 . : Check syntax and style issues
+    isort . : Automatically sort imports

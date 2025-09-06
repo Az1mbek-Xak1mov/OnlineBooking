@@ -1,17 +1,18 @@
-from rest_framework.exceptions import ValidationError
-from rest_framework.generics import CreateAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
+
 from authen.models import User
-from authen.serializers import UserRegistrationSerializer, VerifyOtpSerializer, UserCreateSerializer, PhoneOtpSerializer
+from authen.serializers import (PhoneOtpSerializer, UserCreateSerializer,
+                                UserRegistrationSerializer,
+                                VerifyOtpSerializer)
 from authen.services.otp_service import OtpService
 from authen.utils import generate_code
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 
 
 @extend_schema(tags=['Auth/Register'])

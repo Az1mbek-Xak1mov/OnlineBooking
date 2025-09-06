@@ -1,6 +1,8 @@
 from django.urls import path
-from authen.views import RegisterApiView, VerifyPhoneNumberAPIView, LoginOtpAPIView, VerifyOtpLoginAPIView, \
-    CustomTokenObtainPairView, CustomTokenRefreshView
+
+from authen.views import (CustomTokenObtainPairView, CustomTokenRefreshView,
+                          LoginOtpAPIView, RegisterApiView,
+                          VerifyOtpLoginAPIView, VerifyPhoneNumberAPIView)
 
 urlpatterns = [
     path('registration/', RegisterApiView.as_view(), name='register'),
