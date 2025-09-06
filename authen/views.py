@@ -14,7 +14,6 @@ from authen.utils import generate_code
 class RegisterApiView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         phone_number = serializer.validated_data['phone_number']
@@ -34,7 +33,6 @@ class RegisterApiView(CreateAPIView):
 @extend_schema(tags=['Authentication'])
 class VerifyPhoneNumberAPIView(CreateAPIView):
     serializer_class = VerifyOtpSerializer
-    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
