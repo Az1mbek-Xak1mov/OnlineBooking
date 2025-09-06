@@ -1,4 +1,4 @@
-from os import path
+from os import path # noqa
 
 urlpatterns = [
 

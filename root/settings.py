@@ -136,6 +136,7 @@ REST_FRAMEWORK = {
     )
 }
 
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Online Booking API',
     'DESCRIPTION': 'Your project description',
