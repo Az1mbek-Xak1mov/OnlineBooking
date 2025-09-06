@@ -3,3 +3,6 @@ mig:
 	python manage.py migrate
 admin:
 	python3 manage.py createsuperuser
+
+fake-data:
+	python manage.py loaddata authen/fixtures/fake_user.json
