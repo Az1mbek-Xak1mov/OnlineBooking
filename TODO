@@ -19,10 +19,10 @@ Jahongir:
     1. flake8, isort qoshish ☑️
 
     1.5
-    token olish nomer orqali bolish kk ☑️
+    token olish nomer orqali bolish kk  ☑️
 
     2. register bomaydi, faqat login bor (nomer orqali)
-    nomerga sms code yuborish orqali login qilinadi
+    nomerga sms code yuborish orqali login qilinadi       ☑️
 
     3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
     (zayavka modeli ochiladi, oqildi oqilmadi[is_read])

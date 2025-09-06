@@ -75,3 +75,19 @@ class VerifyOtpSerializer(Serializer):
             raise ValidationError("Phone number must be 12 digits, example: 998 00 000 00 00")
 
         return clean_phone_number
+
+
+class PhoneOtpSerializer(Serializer):
+    phone_number = CharField()
+    otp_code = CharField(max_length=6, required=False)
+
+    def validate_phone_number(self, value):
+        clean_phone_number = re.sub(r"\D", "", value)
+
+        if not clean_phone_number.isdigit():
+            raise ValidationError("Phone number must be digits, example: 998 000 00 00")
+
+        if len(clean_phone_number) != 12:
+            raise ValidationError("Phone number must be 12 digits, example: 998 00 000 00 00")
+
+        return clean_phone_number

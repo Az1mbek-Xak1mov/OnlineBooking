@@ -1,16 +1,20 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from authen.models import User
-from authen.serializers import UserRegistrationSerializer, VerifyOtpSerializer, UserCreateSerializer
+from authen.serializers import UserRegistrationSerializer, VerifyOtpSerializer, UserCreateSerializer, PhoneOtpSerializer
 from authen.services.otp_service import OtpService
 from authen.utils import generate_code
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 
-@extend_schema(tags=['Authentication'])
+@extend_schema(tags=['Auth/Register'])
 class RegisterApiView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -30,7 +34,7 @@ class RegisterApiView(CreateAPIView):
         return serializer
 
 
-@extend_schema(tags=['Authentication'])
+@extend_schema(tags=['Auth/Register'])
 class VerifyPhoneNumberAPIView(CreateAPIView):
     serializer_class = VerifyOtpSerializer
 
@@ -51,6 +55,66 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
 
-        otp_service.delete_temp_data(phone)
+        otp_service.delete_otp(phone)
 
         return Response(UserCreateSerializer(user).data, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=['Auth/Login/PhoneNumber'])
+class LoginOtpAPIView(CreateAPIView):
+    serializer_class = PhoneOtpSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        phone = serializer.validated_data['phone_number']
+
+        code = generate_code()
+        otp_service = OtpService()
+        otp_service.send_otp(phone, code)
+
+        return Response({"detail": "OTP code sent."}, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=['Auth/Login/PhoneNumber'])
+class VerifyOtpLoginAPIView(CreateAPIView):
+    serializer_class = PhoneOtpSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        phone = serializer.validated_data['phone_number']
+        otp_code = serializer.validated_data.get('otp_code')
+
+        if not otp_code:
+            return Response({"detail": "OTP code is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_service = OtpService()
+        if not otp_service.verify_otp(phone, otp_code):
+            return Response({"detail": "Invalid OTP code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(phone_number=phone)
+
+        otp_service.delete_otp(phone)
+
+        refresh = RefreshToken.for_user(user)
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user_id": user.id,
+            "phone_number": user.phone_number
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=['Auth/Login'])
+class CustomTokenObtainPairView(TokenObtainPairView):
+    pass
+
+
+@extend_schema(tags=['Auth/Login'])
+class CustomTokenRefreshView(TokenRefreshView):
+    pass
