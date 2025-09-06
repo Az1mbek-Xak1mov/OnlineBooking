@@ -1,0 +1,77 @@
+[
+  {
+    "model": "authen.user",
+    "pk": "11111111-1111-1111-1111-111111111111",
+    "fields": {
+      "phone_number": "998901234567",
+      "email": "ali.karimov@example.com",
+      "first_name": "Ali",
+      "last_name": "Karimov",
+      "role": "customer",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$260000$fakehash"
+    }
+  },
+  {
+    "model": "authen.user",
+    "pk": "22222222-2222-2222-2222-222222222222",
+    "fields": {
+      "phone_number": "998907654321",
+      "email": "dilnoza.rahimova@example.com",
+      "first_name": "Dilnoza",
+      "last_name": "Rahimova",
+      "role": "provider",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$260000$fakehash"
+    }
+  },
+  {
+    "model": "authen.user",
+    "pk": "33333333-3333-3333-3333-333333333333",
+    "fields": {
+      "phone_number": "998931112233",
+      "email": "admin@example.com",
+      "first_name": "System",
+      "last_name": "Admin",
+      "role": "admin",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true,
+      "password": "pbkdf2_sha256$260000$fakehash"
+    }
+  },
+  {
+    "model": "authen.user",
+    "pk": "44444444-4444-4444-4444-444444444444",
+    "fields": {
+      "phone_number": "998935556677",
+      "email": "moderator@example.com",
+      "first_name": "Moderator",
+      "last_name": "User",
+      "role": "moderator",
+      "is_staff": true,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$260000$fakehash"
+    }
+  },
+  {
+    "model": "authen.user",
+    "pk": "55555555-5555-5555-5555-555555555555",
+    "fields": {
+      "phone_number": "998909876543",
+      "email": "jasur.ismatov@example.com",
+      "first_name": "Jasur",
+      "last_name": "Ismatov",
+      "role": "customer",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$260000$fakehash"
+    }
+  }
+]
