@@ -4,5 +4,5 @@ mig:
 admin:
 	python3 manage.py createsuperuser
 
-fake-data:
+fake-datas:
 	python manage.py loaddata authen/fixtures/fake_user.json
