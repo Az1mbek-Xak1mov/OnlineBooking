@@ -42,6 +42,11 @@ meni ham yozib quyinglareeeee
 
 
 
+UNFINISHED TASKS:
+    3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
+    (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
+    keyin filter qoshiladi (is_read va created_at boyicha)
+
 
 
 DOCS:
@@ -49,7 +54,3 @@ DOCS:
     isort . : Automatically sort imports
 
 
-UNFINISHED TASKS:
-    3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
-    (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
-    keyin filter qoshiladi (is_read va created_at boyicha)
