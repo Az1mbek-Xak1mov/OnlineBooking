@@ -119,5 +119,18 @@ keyin filter qoshiladi (is_read va created_at boyicha)
 7. fake data db toldirish 5-10
 
 
-xolmomin
+
+
+
+task 08
+1. shared(apps, models) apps
+2. verbose_name larni yozib chiqish
+3. botini qoshish
+(category, talab taklif, oxirgi xizmat, my orders)
+4. oxirgi xizmat (oxirgi xizmatlarni eslab qolishi kk)
+5. tlg ni tasdiqlash share contact ni bosganda, osha userga tlg id biriktiriladi
+
+
+service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
+
 

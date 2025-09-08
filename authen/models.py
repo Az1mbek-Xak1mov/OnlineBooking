@@ -1,19 +1,29 @@
-import uuid
-
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, EmailField
-from django.db.models.enums import TextChoices
+from django.db.models import EmailField, Model, TextChoices, CharField, Func
 from django.db.models.fields import UUIDField
 
 from authen.customs import CustomUserManager
 
-# Create your models here.
+
+class GenRandomUUID(Func):
+    """
+    Represents the PostgreSQL gen_random_uuid() function.
+    """
+    function = "gen_random_uuid"
+    template = "%(function)s()"  # no args
+    output_field = UUIDField()
 
 
-class User(AbstractUser):
-    id = UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+class UUIDBaseModel(Model):
+    id = UUIDField(primary_key=True, db_default=GenRandomUUID(), editable=False)
 
-    class RoleType(TextChoices):
+    class Meta:
+        abstract = True
+        required_db_vendor = 'postgresql'
+
+
+class User(AbstractUser, UUIDBaseModel):
+    class Type(TextChoices):
         CUSTOMER = 'customer', 'Customer'
         PROVIDER = 'provider', 'Provider'
         ADMIN = 'admin', 'Admin'
@@ -22,14 +32,19 @@ class User(AbstractUser):
     username = None
     phone_number = CharField(max_length=20, unique=True)
     email = EmailField(blank=True, null=True, unique=False)
+    type = CharField(choices=Type.choices, max_length=15)
+
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
-    role = CharField(choices=RoleType.choices, max_length=15)
 
     @property
     def fullname(self):
         return f"{self.first_name.capitalize()} {self.last_name.capitalize()}"
+
+    @property
+    def is_customer(self):
+        return self.type == 'customer'
 
 # class RoleRequest(Model):
 #     id = UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)

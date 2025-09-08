@@ -6,7 +6,7 @@ from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               PositiveIntegerField, TimeField)
 from django.db.models.fields import DateTimeField, UUIDField
 
-# Create your models here.
+from authen.models import User
 
 
 class UUIDModel(Model):
@@ -32,17 +32,19 @@ class ServiceCategory(UUIDModel, CreatedBaseModel):
 
 
 class Service(UUIDModel, CreatedBaseModel):
-    user = ForeignKey('authen.User', CASCADE, related_name="services")
-    category = ForeignKey(ServiceCategory, SET_NULL, null=True, related_name="services")
+    user = ForeignKey('authen.User', CASCADE, limit_choices_to={'type': 'provider'},
+                      related_name="services")  # TODO change name
+    category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
     name = CharField(max_length=255)
     address = CharField(max_length=255)
+    # TODO location
     capacity = PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
 
 
-class Schedule(UUIDModel, CreatedBaseModel):
+class Schedule(UUIDModel, CreatedBaseModel):  # TODO fix
     service = ForeignKey('app.Service', CASCADE, related_name="schedules")
     date = DateField()
     start_time = TimeField()
@@ -52,15 +54,7 @@ class Schedule(UUIDModel, CreatedBaseModel):
         return f"{self.service.name} - {self.date} ({self.start_time}-{self.end_time})"
 
 
-class Calendar(UUIDModel, CreatedBaseModel):
-    date = DateField(unique=True)
-    is_day_off = BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.date} - {'Dam olish' if self.is_day_off else 'Ish kuni'}"
-
-
-class ServiceSchedule(UUIDModel, CreatedBaseModel):
+class ServiceSchedule(UUIDModel, CreatedBaseModel):  # TODO fix
     service = ForeignKey(Service, CASCADE, related_name="service_schedules")
     schedule = ForeignKey(Schedule, CASCADE, related_name="service_schedules")
 
@@ -71,13 +65,11 @@ class ServiceSchedule(UUIDModel, CreatedBaseModel):
 class Booking(UUIDModel, CreatedBaseModel):
     service = ForeignKey('app.Service', CASCADE, related_name="bookings")
     user = ForeignKey('authen.User', CASCADE, related_name="bookings")
-    start_time = DateTimeField()
-    duration = PositiveIntegerField(default=60)
-    seats = PositiveIntegerField(default=1)
+    date = DateField()
+    start_time = TimeField()  # 18:00
+    end_time = TimeField()  # 20:00
+    seats = PositiveIntegerField(db_default=1)
 
     def __str__(self):
         return (f"{self.user.phone_number} -> "
                 f"{self.service.name} ({self.start_time.strftime('%H:%M')}, {self.seats} joy)")
-
-
-# TODO check models
