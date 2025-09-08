@@ -9,4 +9,9 @@ dependencies = [
     "dotenv>=0.9.9",
     "drf-spectacular>=0.28.0",
     "drf-spectacular-sidecar>=2025.8.1",
+    "flake8>=7.3.0",
+    "isort>=6.0.1",
+    "orjson>=3.11.3",
+    "psycopg2-binary>=2.9.10",
+    "redis>=6.4.0",
 ]

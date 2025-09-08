@@ -1,97 +1,44 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager, AbstractUser
-from django.db import models
-from django.db.models import EmailField, CharField, Model, ForeignKey
+import uuid
+
+from django.contrib.auth.models import AbstractUser
+from django.db.models import CharField, EmailField
 from django.db.models.enums import TextChoices
+from django.db.models.fields import UUIDField
 
+from authen.customs import CustomUserManager
 
 # Create your models here.
-# Create your models here.
-class CustomUserManager(UserManager):
-    use_in_migrations = True
-
-    def _create_user_object(self, email, password, **extra_fields):
-        if not email:
-            raise ValueError("The given email must be set")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.password = make_password(password)
-        return user
-
-    def _create_user(self, email, password, **extra_fields):
-        user = self._create_user_object(email, password, **extra_fields)
-        user.save(using=self._db)
-        return user
-
-    async def _acreate_user(self, email, password, **extra_fields):
-        """See _create_user()"""
-        user = self._create_user_object(email, password, **extra_fields)
-        await user.asave(using=self._db)
-        return user
-
-    def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", False)
-        extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, password, **extra_fields)
-
-    create_user.alters_data = True
-
-    async def acreate_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", False)
-        extra_fields.setdefault("is_superuser", False)
-        return await self._acreate_user(email, password, **extra_fields)
-
-    acreate_user.alters_data = True
-
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        return self._create_user(email, password, **extra_fields)
-
-    create_superuser.alters_data = True
-
-    async def acreate_superuser(
-            self, email, password=None, **extra_fields
-    ):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        return await self._acreate_user(email, password, **extra_fields)
-
-    acreate_superuser.alters_data = True
 
 
 class User(AbstractUser):
+    id = UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+
     class RoleType(TextChoices):
-        CUSTOMER = 'customer' , 'Customer'
-        PROVIDER = 'provider' , 'Provider'
+        CUSTOMER = 'customer', 'Customer'
+        PROVIDER = 'provider', 'Provider'
         ADMIN = 'admin', 'Admin'
         MODERATOR = 'moderator', 'Moderator'
 
-
     username = None
-    email = EmailField(unique=True)
-
-    role = CharField(choices=RoleType.choices)  # TODO default yozib qoyish kk
-
-    USERNAME_FIELD = 'email'
+    phone_number = CharField(max_length=20, unique=True)
+    email = EmailField(blank=True, null=True, unique=False)
+    USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
-    role = CharField(choices=RoleType.choices)
-    first_name = CharField()
-    last_name = CharField()
+    role = CharField(choices=RoleType.choices, max_length=15)
 
     @property
     def fullname(self):
-        return f"{self.first_name.capitalize()} {self.first_name.capitalize()}"
+        return f"{self.first_name.capitalize()} {self.last_name.capitalize()}"
+
+# class RoleRequest(Model):
+#     id = UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+#     sender = ForeignKey('authen.User', on_delete=CASCADE, related_name='sender_request')
+#     receiver = ManyToManyField('authen.User', null=True, blank=True, related_name='receiver_request')
+#     message = TextField()
+#     is_read = BooleanField(default=False)
+#     is_accepted = BooleanField(null=True, blank=True)
+#     created_at = DateTimeField(auto_now_add=True)
+#
+#     class Meta:
+#         ordering = 'read_only','-created_at',

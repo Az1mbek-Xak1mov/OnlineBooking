@@ -8,7 +8,7 @@ TZ:
     3. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
 
 Salimjon:
-123
+    5. service va category modelini yozish ☑️
 
 
 Abror:
@@ -16,8 +16,20 @@ darsdan keyin maslahat qilamiz
 
 
 Jahongir:
-    uvga qoshildim..
-    Joined
+    1. flake8, isort qoshish ☑️
+
+    1.5
+    token olish nomer orqali bolish kk  ☑️
+
+    2. register bomaydi, faqat login bor (nomer orqali)
+    nomerga sms code yuborish orqali login qilinadi       ☑️
+
+    4. adminkada adminlar, providerlar, customerlar, moderatorlar db alohida chiqishi kk ☑️
+
+    6. barcha id lar uuid bolishi kerak ☑️
+
+    7. fake data db toldirish 5-10 | 1. User ☑️;
+
 
 
 Azim:
@@ -30,6 +42,16 @@ meni ham yozib quyinglareeeee
 
 
 
+UNFINISHED TASKS:
+    3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
+    (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
+    keyin filter qoshiladi (is_read va created_at boyicha)
+
+
+
+DOCS:
+    flake8 . : Check syntax and style issues
+    isort . : Automatically sort imports
 
 TZ:
 
