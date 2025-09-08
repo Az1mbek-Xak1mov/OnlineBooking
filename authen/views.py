@@ -11,8 +11,7 @@ from authen.models import User
 from authen.serializers import (PhoneOtpSerializer, UserCreateSerializer,
                                 UserRegistrationSerializer,
                                 VerifyOtpSerializer)
-from authen.services.otp_service import OtpService
-from authen.utils import generate_code
+from authen.utils import OtpService, generate_code
 
 
 @extend_schema(tags=['Auth/Register'])

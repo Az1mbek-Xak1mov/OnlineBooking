@@ -1,7 +1,13 @@
+import random
+
 import orjson
 from redis import Redis
 
 from root.settings import REDIS_URL
+
+
+def generate_code(length: int = 6):
+    return "".join(str(random.randint(0, 9)) for _ in range(length))
 
 
 class OtpService:
