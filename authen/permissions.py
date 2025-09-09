@@ -9,14 +9,14 @@ class IsCustomer(BasePermission):
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'admin')
+        return bool(request.user and request.user.is_authenticated and request.user.is_admin)
 
 
 class IsModerator(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'moderator')
+        return bool(request.user and request.user.is_authenticated and request.user.is_moderator)
 
 
 class IsProvider(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'provider')
+        return bool(request.user and request.user.is_authenticated and request.user.is_provider)

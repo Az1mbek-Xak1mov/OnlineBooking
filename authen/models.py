@@ -43,6 +43,18 @@ class User(AbstractUser, UUIDBaseModel):
         return f"{self.first_name.capitalize()} {self.last_name.capitalize()}"
 
     @property
+    def is_provider(self):
+        return self.type == 'provider'
+
+    @property
+    def is_admin(self):
+        return self.type == 'admin'
+
+    @property
+    def is_moderator(self):
+        return self.type == 'moderator'
+
+    @property
     def is_customer(self):
         return self.type == 'customer'
 
