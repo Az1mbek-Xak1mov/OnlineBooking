@@ -84,6 +84,9 @@ class PhoneOtpSerializer(Serializer):
     def validate_phone_number(self, value):
         clean_phone_number = re.sub(r"\D", "", value)
 
+        if not User.objects.filter(phone_number=clean_phone_number).exists():
+            raise ValidationError("This phone number must be registered")
+
         if not clean_phone_number.isdigit():
             raise ValidationError("Phone number must be digits, example: 998 000 00 00")
 
