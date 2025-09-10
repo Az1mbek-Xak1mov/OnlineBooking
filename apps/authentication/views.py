@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
-from authen.models import User
-from authen.serializers import (UserCreateSerializer,
-                                UserRegistrationSerializer,
-                                VerifyOtpSerializer)
-from authen.utils import OtpService, generate_code
+from authentication.models import User
+from authentication.serializers import (UserCreateSerializer,
+                                             UserRegistrationSerializer,
+                                             VerifyOtpSerializer)
+from authentication.utils import OtpService, generate_code
 
 
 @extend_schema(tags=['Auth/Register'])

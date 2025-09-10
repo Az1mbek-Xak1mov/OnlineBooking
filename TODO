@@ -93,9 +93,6 @@ joylar soni
 
 
 
-
-
-
 OnlineBooking
 task
 1. flake8, isort qoshish
@@ -117,7 +114,6 @@ keyin filter qoshiladi (is_read va created_at boyicha)
 6. barcha id lar uuid bolishi kerak
 
 7. fake data db toldirish 5-10
-
 
 
 

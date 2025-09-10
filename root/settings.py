@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from os.path import join
 from pathlib import Path
@@ -8,11 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-j9yq_(faev4re6(d_lw6)u#9z@om-)d_ef&7ye#gtdhk&&0$6p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -20,7 +18,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'authen.User'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -31,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
-    'authen',
+    'authentication',
 
     'rest_framework',
     'drf_spectacular',
@@ -51,6 +49,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'root.urls'
+AUTH_USER_MODEL = 'authentication.User'
+
 
 TEMPLATES = [
     {
@@ -73,7 +73,6 @@ WSGI_APPLICATION = 'root.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -84,7 +83,6 @@ DATABASES = {
         'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
-print(1)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -141,7 +139,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
-
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Online Booking API',
