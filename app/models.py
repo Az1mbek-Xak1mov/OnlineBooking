@@ -1,12 +1,10 @@
 import uuid
 
 from django.db import models  # noqa
-from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
+from django.db.models import (CASCADE, SET_NULL, CharField,
                               DateField, ForeignKey, Model,
                               PositiveIntegerField, TimeField)
 from django.db.models.fields import DateTimeField, UUIDField
-
-from authen.models import User
 
 
 class UUIDModel(Model):

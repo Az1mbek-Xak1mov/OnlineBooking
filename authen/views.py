@@ -1,9 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
@@ -43,7 +41,6 @@ class RegisterApiView(CreateAPIView):
         )
 
 
-
 @extend_schema(tags=['Auth/Register'])
 class VerifyPhoneNumberAPIView(CreateAPIView):
     serializer_class = VerifyOtpSerializer
@@ -69,6 +66,7 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
         otp_service.delete_otp(phone)
 
         return Response(UserCreateSerializer(user).data, status=status.HTTP_200_OK)
+
 
 @extend_schema(tags=['Auth/Login'])
 class CustomTokenObtainPairView(TokenObtainPairView):

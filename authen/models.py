@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import EmailField, Model, TextChoices, CharField, Func
+from django.db.models import CharField, EmailField, Func, Model, TextChoices
 from django.db.models.fields import UUIDField
 
 from authen.customs import CustomUserManager
