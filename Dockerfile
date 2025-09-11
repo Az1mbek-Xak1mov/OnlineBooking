@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY ./ /app
 
+#RUN cd /app && uv sync
 
 RUN uv sync
 
