@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField, EmailField, TextChoices
 
-from authentication.customs import CustomUserManager
 from apps.shared.models import UUIDBaseModel
+from shared.manager import CustomUserManager
 
 
 class User(AbstractUser, UUIDBaseModel):
