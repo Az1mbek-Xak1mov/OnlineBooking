@@ -2,14 +2,16 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.transaction import atomic
 from django.shortcuts import render  # noqa
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from app.models import Service, Booking
+from app.models import Service, Booking, ServiceCategory
 from app.permissions import IsProvider
-from app.serializers import ServiceSerializer, BookingSerializer
+from app.serializers import ServiceSerializer, BookingSerializer, ServiceCategoryModelSerializer, \
+    ServiceRetrieveModelSerializer, BookingHistorySerializer
 
 
 class ServiceViewSet(ModelViewSet):
@@ -55,3 +57,31 @@ class BookingCreateAPIView(CreateAPIView):
 
         out = BookingSerializer(booking, context={"request": request})
         return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+
+
+
+
+
+@extend_schema(tags=['Service'])
+class ServiceRetrieveAPIView(RetrieveAPIView):
+    serializer_class = ServiceRetrieveModelSerializer
+    queryset = Service.objects.all()
+    lookup_field = 'pk'
+
+
+@extend_schema(tags=['Service-Category'])
+class ServiceCategoryListAPIView(ListAPIView):
+    serializer_class = ServiceCategoryModelSerializer
+    queryset = ServiceCategory.objects.all()
+
+@extend_schema(tags=['User-Booking-History'])
+class UserBookingHistoryListAPIView(ListAPIView):
+    serializer_class = BookingHistorySerializer
+    queryset = Booking.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Booking.objects.filter(user=user)
