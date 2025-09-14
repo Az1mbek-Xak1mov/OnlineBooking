@@ -1,0 +1,17 @@
+services:
+  backend_service:
+    build:  .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: uv run python3 manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - postgres_service
+
+  postgres_service:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD=1
+    ports:
+      - "5433:5432"

@@ -1,0 +1,60 @@
+from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ModelSerializer
+
+from app.models import ServiceSchedule, Booking, Service
+
+
+class ServiceScheduleSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceSchedule
+        fields = ("weekday", "start_time", "end_time")
+
+    def validate(self, data):
+        if data["start_time"] >= data["end_time"]:
+            raise ValidationError("start_time must be before end_time")
+        return data
+
+class ServiceSerializer(ModelSerializer):
+    schedules = ServiceScheduleSerializer(many=True, required=False)
+
+    class Meta:
+        model = Service
+        fields = ("id", "owner","name", "address", "capacity", "category", "schedules")
+        read_only_fields = ("id",)
+
+    def create(self, validated_data):
+        schedules_data = validated_data.pop("schedules", [])
+        service = Service.objects.create(**validated_data)
+        for sch in schedules_data:
+            ServiceSchedule.objects.create(service=service, **sch)
+        return service
+
+    def validate(self, data):
+        return data
+
+
+class BookingSerializer(ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ("id", "service", "user", "weekday", "start_time", "seats")
+        read_only_fields = ("id", "user")
+
+    def validate_seats(self, value):
+        if value <= 0:
+            raise ValidationError("seats must be more than 1")
+        return value
+
+    def validate(self, data):
+        service = data["service"]
+        seats = data.get("seats", 1)
+        if seats > service.capacity:
+            raise ValidationError("seats can't exceed service capacity")
+
+        weekday = data["weekday"]
+        start_time = data["start_time"]
+        matches = service.schedules.filter(weekday=weekday,
+                                           start_time__lte=start_time,
+                                           end_time__gt=start_time)
+        if not matches.exists():
+            raise ValidationError("Service is closed at that time")
+        return data
