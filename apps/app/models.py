@@ -17,6 +17,10 @@ WEEKDAY_CHOICES = [
 class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
 
+    class Meta:
+        verbose_name = 'ServiceCategory'
+        verbose_name_plural = 'ServiceCategories'
+
     def __str__(self):
         return self.name
 
@@ -29,6 +33,10 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
     # LOCATION
+
+    class Meta:
+        verbose_name = 'Service'
+        verbose_name_plural = 'Services'
 
 
 class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
@@ -59,6 +67,8 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
         indexes = [
             Index(fields=["service", "weekday", "start_time"]),
         ]
+        verbose_name = 'Booking'
+        verbose_name_plural = 'Bookings'
 
     def __str__(self):
         return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} ({self.seats})"
