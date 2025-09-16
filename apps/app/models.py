@@ -76,3 +76,6 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
     def clean(self):
         if self.seats > self.service.capacity:
             raise ValidationError("seats can't exceed service capacity")
+
+
+# Hello world
