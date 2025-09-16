@@ -1,6 +1,8 @@
+from datetime import timedelta, datetime, date
+
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, CharField,
-                              ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index)
+                              ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField)
 from apps.shared.models import UUIDBaseModel, CreatedBaseModel
 
 WEEKDAY_CHOICES = [
@@ -28,6 +30,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
+    duration = DurationField(default=timedelta(minutes=60))
     # LOCATION
 
 
@@ -47,22 +50,40 @@ class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
         if self.start_time >= self.end_time:
             raise ValidationError("start_time must be before end_time")
 
+    @property
+    def start_time_hm(self):
+        return self.start_time.strftime("%H:%M") if self.start_time else None
+
 
 class Booking(UUIDBaseModel, CreatedBaseModel):
     service = ForeignKey(Service, on_delete=CASCADE, related_name="bookings")
     user = ForeignKey('authentication.User', on_delete=CASCADE, related_name="bookings")
     weekday = IntegerField(choices=WEEKDAY_CHOICES)
     start_time = TimeField()
+    end_time = TimeField()
     seats = PositiveIntegerField(default=1)
 
     class Meta:
         indexes = [
-            Index(fields=["service", "weekday", "start_time"]),
+            Index(fields=["service", "weekday", "start_time","end_time"]),
         ]
 
     def __str__(self):
-        return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} ({self.seats})"
+        return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} {self.end_time} ({self.seats})"
 
     def clean(self):
         if self.seats > self.service.capacity:
             raise ValidationError("seats can't exceed service capacity")
+
+    @property
+    def start_time_hm(self):
+        return self.start_time.strftime("%H:%M") if self.start_time else None
+
+    def save(self, *args, **kwargs):
+        if self.start_time:
+            # normalize seconds/microseconds
+            start = self.start_time.replace(second=0, microsecond=0)
+            dt_start = datetime.combine(date.min, start)
+            dt_end = dt_start + timedelta(hours=1)
+            self.end_time = dt_end.time().replace(second=0, microsecond=0)
+        super().save(*args, **kwargs)

@@ -36,7 +36,7 @@ class BookingCreateAPIView(CreateAPIView):
 
         with atomic():
             agg = Booking.objects.select_for_update().filter(
-                service=service, weekday=date_obj, start_time=start_time
+                service=service, weekday=date_obj,start_time__lte=start_time, end_time__gte=start_time
             ).aggregate(total=Coalesce(Sum("seats"), 0))
             booked = agg["total"] or 0
             if booked + seats > service.capacity:
@@ -44,7 +44,6 @@ class BookingCreateAPIView(CreateAPIView):
                     {"detail": "Not enough capacity for this time slot"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
             booking = Booking.objects.create(
                 service=service,
                 user=user,
@@ -55,3 +54,4 @@ class BookingCreateAPIView(CreateAPIView):
 
         out = BookingSerializer(booking, context={"request": request})
         return Response(out.data, status=status.HTTP_201_CREATED)
+

@@ -1,10 +1,32 @@
+from datetime import datetime, date, timedelta
+
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer,TimeField
 
 from app.models import ServiceSchedule, Booking, Service
 
 
 class ServiceScheduleSerializer(ModelSerializer):
+    start_time = TimeField(
+        format='%H:%M',
+        input_formats=[
+            '%H:%M:%S.%fZ',
+            '%H:%M:%SZ',
+            '%H:%M:%S',
+            '%H:%M',
+        ],
+        allow_null=False
+    )
+    end_time = TimeField(
+        format='%H:%M',
+        input_formats=[
+            '%H:%M:%S.%fZ',
+            '%H:%M:%SZ',
+            '%H:%M:%S',
+            '%H:%M',
+        ],
+        allow_null=False
+    )
     class Meta:
         model = ServiceSchedule
         fields = ("weekday", "start_time", "end_time")
@@ -34,7 +56,19 @@ class ServiceSerializer(ModelSerializer):
 
 
 class BookingSerializer(ModelSerializer):
+    start_time = TimeField(
+        format='%H:%M',
+        input_formats=[
+            '%H:%M:%S.%fZ',
+            '%H:%M:%SZ',
+            '%H:%M:%S',
+            '%H:%M',
+        ],
+        allow_null=False
+    )
+
     class Meta:
+
         model = Booking
         fields = ("id", "service", "user", "weekday", "start_time", "seats")
         read_only_fields = ("id", "user")
@@ -57,4 +91,5 @@ class BookingSerializer(ModelSerializer):
                                            end_time__gt=start_time)
         if not matches.exists():
             raise ValidationError("Service is closed at that time")
+
         return data
