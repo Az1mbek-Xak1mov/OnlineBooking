@@ -3,7 +3,7 @@ from datetime import datetime, date, timedelta
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer,TimeField
 
-from app.models import ServiceSchedule, Booking, Service
+from app.models import ServiceSchedule, Booking, Service, ServiceCategory
 
 
 class ServiceScheduleSerializer(ModelSerializer):
@@ -93,3 +93,18 @@ class BookingSerializer(ModelSerializer):
             raise ValidationError("Service is closed at that time")
 
         return data
+
+class ServiceRetrieveModelSerializer(ModelSerializer):
+    class Meta:
+        model = Service
+        fields = "__all__"
+
+class ServiceCategoryModelSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = '__all__'
+
+class BookingHistorySerializer(ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = "__all__"

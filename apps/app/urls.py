@@ -1,6 +1,6 @@
 from django.urls import path
 
-from app.views import BookingCreateAPIView, ServiceViewSet, ServiceCategoryListAPIView, ServiceRetrieveAPIView, \
+from app.views import BookingCreateAPIView, ServiceViewSet, ServiceRetrieveAPIView, ServiceCategoryListAPIView, \
     UserBookingHistoryListAPIView
 
 urlpatterns = [
