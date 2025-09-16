@@ -15,3 +15,8 @@ services:
       - POSTGRES_PASSWORD=1
     ports:
       - "5434:5432"
+
+  redis_service:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
