@@ -91,36 +91,19 @@ joylar soni
 
 
 
-OnlineBooking
-task
-1. flake8, isort qoshish
-
-1.5
-token olish nomer orqali bolish kk
-
-2. register bomaydi, faqat login bor (nomer orqali)
-nomerga sms code yuborish orqali login qilinadi
 
 3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
 (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
 keyin filter qoshiladi (is_read va created_at boyicha)
 
-4. adminkada adminlar, providerlar, customerlar, moderatorlar db alohida chiqishi kk
-
-5. service va category modelini yozish
-
 6. barcha id lar uuid bolishi kerak
-
-7. fake data db toldirish 5-10
-
 
 
 
 task 08
 1. shared(apps, models) apps
-2. verbose_name larni yozib chiqish
-3. botini qoshish
-(category, talab taklif, oxirgi xizmat, my orders)
+
+
 4. oxirgi xizmat (oxirgi xizmatlarni eslab qolishi kk)
 5. tlg ni tasdiqlash share contact ni bosganda, osha userga tlg id biriktiriladi
 
@@ -131,6 +114,11 @@ service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 
 TASK
-1. django commands qoshish
-python3 manage.py add-moderator 5
-5ta moderator qoshish kk
+1. django commands qoshish (service, category, user qosha oladigan faker orqali)
+2. help_text, verbose_name larni yozib chiqish
+3. botini qoshish
+(category, talab taklif, oxirgi xizmat, my orders)
+
+
+TODO teacher
+leaflet

@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField, EmailField, TextChoices
-from apps.shared.models import UUIDBaseModel
+
 from shared.manager import CustomUserManager
+from shared.models import UUIDBaseModel
 
 
 class User(AbstractUser, UUIDBaseModel):
@@ -14,7 +15,7 @@ class User(AbstractUser, UUIDBaseModel):
     username = None
     phone_number = CharField(max_length=20, unique=True)
     email = EmailField(blank=True, null=True, unique=False)
-    type = CharField(choices=Type.choices, max_length=15,default=Type.CUSTOMER)
+    type = CharField(choices=Type.choices, max_length=15, default=Type.CUSTOMER)
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
@@ -26,7 +27,7 @@ class User(AbstractUser, UUIDBaseModel):
 
     @property
     def is_provider(self):
-        return self.type == 'provider'
+        return self.type == self.Type.PROVIDER  # TODO style
 
     @property
     def is_admin(self):
@@ -39,4 +40,3 @@ class User(AbstractUser, UUIDBaseModel):
     @property
     def is_customer(self):
         return self.type == 'customer'
-

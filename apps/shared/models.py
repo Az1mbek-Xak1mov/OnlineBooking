@@ -15,6 +15,7 @@ class UUIDBaseModel(Model):
         abstract = True
         required_db_vendor = 'postgresql'
 
+
 class CreatedBaseModel(Model):
     updated_at = DateTimeField(auto_now=True)
     created_at = DateTimeField(auto_now_add=True)

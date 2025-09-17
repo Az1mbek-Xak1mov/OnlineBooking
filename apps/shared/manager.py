@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import UserManager
 
 
-class CustomUserManager(UserManager):
+class CustomUserManager(UserManager): # TODO online pdp dan olish kk
     use_in_migrations = True
 
     def _create_user_object(self, phone_number, email, password, **extra_fields):

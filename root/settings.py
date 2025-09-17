@@ -18,7 +18,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,6 +31,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'rest_framework_simplejwt',
+    # 'leaflet',
 
 ]
 
@@ -51,8 +51,7 @@ AUTH_USER_MODEL = 'authentication.User'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -164,4 +163,14 @@ MAP_WIDGETS = {
             "showZoomNavigation": True,
         }
     }
+}
+
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (40.0, -3.7),  # default map center (lat, lon)
+    'DEFAULT_ZOOM': 6,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+    'SCALE': 'both',  # show scale bar
+    'ATTRIBUTION_PREFIX': 'Company Map',
 }

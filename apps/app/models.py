@@ -3,7 +3,8 @@ from datetime import timedelta, datetime, date
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, CharField,
                               ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField,
-                              DecimalField, JSONField, FloatField, TextField, DateTimeField)
+                              FloatField, TextField)
+
 from apps.shared.models import UUIDBaseModel, CreatedBaseModel
 
 WEEKDAY_CHOICES = [
@@ -17,6 +18,9 @@ WEEKDAY_CHOICES = [
 ]
 
 
+# TODO class choices ga otkazish
+
+
 class Park(Model):
     name = CharField(max_length=100)
     lat = FloatField()
@@ -27,11 +31,9 @@ class Park(Model):
         return self.name
 
 
-    def __str__(self):
-        return self.name
-
 class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
+
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -41,9 +43,9 @@ class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
 
 
 class Service(UUIDBaseModel, CreatedBaseModel):
-    owner = ForeignKey('authentication.User', on_delete=CASCADE,
+    owner = ForeignKey('authentication.User', CASCADE,
                        limit_choices_to={'type': 'provider'}, related_name="services")
-    category = ForeignKey('app.ServiceCategory', on_delete=SET_NULL, null=True, related_name="services")
+    category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
     name = CharField(max_length=255)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
@@ -57,7 +59,8 @@ class Service(UUIDBaseModel, CreatedBaseModel):
 
 
 class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
-    service = ForeignKey(Service, on_delete=CASCADE, related_name="schedules")
+    service = ForeignKey('app.Service', CASCADE, related_name="schedules")
+    # TODO fk style da yozish
     weekday = IntegerField(choices=WEEKDAY_CHOICES)
     start_time = TimeField()
     end_time = TimeField()
@@ -77,17 +80,22 @@ class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
         return self.start_time.strftime("%H:%M") if self.start_time else None
 
 
+# TODO ServiceMixin
+#     service = ForeignKey(Service, on_delete=CASCADE, related_name="bookings")
+#     weekday = IntegerField(choices=WEEKDAY_CHOICES)
+
 class Booking(UUIDBaseModel, CreatedBaseModel):
     service = ForeignKey(Service, on_delete=CASCADE, related_name="bookings")
-    user = ForeignKey('authentication.User', on_delete=CASCADE, related_name="bookings")
     weekday = IntegerField(choices=WEEKDAY_CHOICES)
+    user = ForeignKey('authentication.User', on_delete=CASCADE, related_name="bookings")
+    # TODO date qoshish
     start_time = TimeField()
     end_time = TimeField()
     seats = PositiveIntegerField(default=1)
 
     class Meta:
         indexes = [
-            Index(fields=["service", "weekday", "start_time","end_time"]),
+            Index(fields=["service", "weekday", "start_time", "end_time"]),
         ]
         verbose_name = 'Booking'
         verbose_name_plural = 'Bookings'

@@ -4,6 +4,8 @@ from django.contrib.admin import ModelAdmin
 from .models import User
 
 
+# TODO admin.py ni bolaklash proxy, users
+
 class Customer(User):
     class Meta:
         proxy = True
@@ -38,7 +40,7 @@ class CustomerAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.RoleType.CUSTOMER)
+        return super().get_queryset(request).filter(role=User.Type.CUSTOMER)
 
 
 @admin.register(Provider)
@@ -47,16 +49,16 @@ class ProviderAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.RoleType.PROVIDER)
+        return super().get_queryset(request).filter(role=User.Type.PROVIDER)
 
 
 @admin.register(AdminUser)
-class AdminUserAdmin(ModelAdmin):
+class AdminUserModelAdmin(ModelAdmin):  # TODO voris olish klass
     list_display = ("phone_number", "email", "first_name", "last_name", "is_active")
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.RoleType.ADMIN)
+        return super().get_queryset(request).filter(role=User.Type.ADMIN)
 
 
 @admin.register(Moderator)
@@ -65,4 +67,4 @@ class ModeratorAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.RoleType.MODERATOR)
+        return super().get_queryset(request).filter(role=User.Type.MODERATOR)
