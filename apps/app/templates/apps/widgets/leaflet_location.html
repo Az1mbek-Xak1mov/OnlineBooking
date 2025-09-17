@@ -1,49 +1,50 @@
-{% load static %}
-
-<style>
-    #map {
-        height: 400px; /* must have a height! */
-        margin-top: 1em;
-        border: 1px solid #ccc;
-    }
-</style>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="">
+    </script>
+    <style>
+        #map {
+            height: 300px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
 <div id="map"></div>
 
+<input type="hidden" id="lat" name="lat">
+<input type="hidden" id="lng" name="lng">
+
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const latInput = document.getElementById("id_{{ lat_field }}");
-  const lonInput = document.getElementById("id_{{ lon_field }}");
+    var map = L.map('map').setView([41.3111, 69.2797], 15); // Tashkent default
 
-  // fallback starting position
-  let lat = parseFloat(latInput?.value) || 40.0;
-  let lon = parseFloat(lonInput?.value) || -3.7;
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
 
-  // initialize map
-  const map = L.map("map").setView([lat, lon], 6);
+    let marker;
 
-  // add OpenStreetMap tiles
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-  }).addTo(map);
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
 
-  // add draggable marker
-  let marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker([lat, lng]).addTo(map);
 
-  // update inputs when marker moves
-  function updateInputs(e) {
-    const { lat, lng } = e.latlng || marker.getLatLng();
-    if (latInput) latInput.value = lat.toFixed(6);
-    if (lonInput) lonInput.value = lng.toFixed(6);
-  }
-
-  marker.on("dragend", updateInputs);
-
-  // update marker when clicking on map
-  map.on("click", function (e) {
-    marker.setLatLng(e.latlng);
-    updateInputs(e);
-  });
-});
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lng;
+    });
 </script>
+</body>
+</html>
