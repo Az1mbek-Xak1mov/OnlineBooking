@@ -1,24 +1,33 @@
-from datetime import timedelta, datetime, date
+from datetime import datetime, timedelta, date as date_cls
 
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, CharField,
                               ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField,
-                              FloatField, TextField)
+                              FloatField, TextField, TextChoices)
+from django.db.models.fields import DateField, BooleanField
+from django.utils import timezone
 
 from apps.shared.models import UUIDBaseModel, CreatedBaseModel
 
-WEEKDAY_CHOICES = [
-    (0, "Monday"),
-    (1, "Tuesday"),
-    (2, "Wednesday"),
-    (3, "Thursday"),
-    (4, "Friday"),
-    (5, "Saturday"),
-    (6, "Sunday"),
-]
+WEEKDAY_NAME_TO_INDEX = {
+    "monday": 0,
+    "tuesday": 1,
+    "wednesday": 2,
+    "thursday": 3,
+    "friday": 4,
+    "saturday": 5,
+    "sunday": 6,
+}
 
 
-# TODO class choices ga otkazish
+class WeekdayChoices(TextChoices):
+    MONDAY = 'monday', 'Monday'
+    TUESDAY = 'tuesday', 'Tuesday'
+    WEDNESDAY = 'wednesday', 'Wednesday'
+    THURSDAY = 'thursday', 'Thursday'
+    FRIDAY = 'friday', 'Friday'
+    SATURDAY = 'saturday', 'Saturday'
+    SUNDAY = 'sunday', 'Sunday'
 
 
 class Park(Model):
@@ -60,10 +69,10 @@ class Service(UUIDBaseModel, CreatedBaseModel):
 
 class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
     service = ForeignKey('app.Service', CASCADE, related_name="schedules")
-    # TODO fk style da yozish
-    weekday = IntegerField(choices=WEEKDAY_CHOICES)
+    weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     start_time = TimeField()
     end_time = TimeField()
+    is_working = BooleanField(default=True)
 
     class Meta:
         ordering = ("weekday", "start_time")
@@ -80,15 +89,11 @@ class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
         return self.start_time.strftime("%H:%M") if self.start_time else None
 
 
-# TODO ServiceMixin
-#     service = ForeignKey(Service, on_delete=CASCADE, related_name="bookings")
-#     weekday = IntegerField(choices=WEEKDAY_CHOICES)
-
 class Booking(UUIDBaseModel, CreatedBaseModel):
-    service = ForeignKey(Service, on_delete=CASCADE, related_name="bookings")
-    weekday = IntegerField(choices=WEEKDAY_CHOICES)
-    user = ForeignKey('authentication.User', on_delete=CASCADE, related_name="bookings")
-    # TODO date qoshish
+    service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
+    weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
+    user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
+    date = DateField()
     start_time = TimeField()
     end_time = TimeField()
     seats = PositiveIntegerField(default=1)
@@ -113,9 +118,29 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
 
     def save(self, *args, **kwargs):
         if self.start_time:
-            # normalize seconds/microseconds
             start = self.start_time.replace(second=0, microsecond=0)
-            dt_start = datetime.combine(date.min, start)
+        else:
+            start = None
+        if not self.date and self.weekday:
+            name = str(self.weekday).lower()
+            if name not in WEEKDAY_NAME_TO_INDEX:
+                raise ValueError(f"Unknown weekday value: {self.weekday}")
+            target_idx = WEEKDAY_NAME_TO_INDEX[name]
+            today = timezone.localdate()
+            today_idx = today.weekday()
+            delta_days = (target_idx - today_idx) % 7
+            candidate_date = today + timedelta(days=delta_days)
+
+            if delta_days == 0 and start is not None:
+                now_time = timezone.localtime().time()
+                if start <= now_time:
+                    candidate_date = candidate_date + timedelta(days=7)
+
+            self.date = candidate_date
+
+        if start:
+            dt_start = datetime.combine(date_cls.min, start)
             dt_end = dt_start + timedelta(hours=1)
             self.end_time = dt_end.time().replace(second=0, microsecond=0)
+
         super().save(*args, **kwargs)
