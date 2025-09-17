@@ -41,7 +41,7 @@ class ServiceSerializer(ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ("id", "owner","name", "address", "capacity", "category", "schedules")
+        fields = ("id", "owner","name","price","description" ,"address", "capacity", "category", "schedules")
         read_only_fields = ("id",)
 
     def create(self, validated_data):

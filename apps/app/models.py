@@ -2,7 +2,8 @@ from datetime import timedelta, datetime, date
 
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, CharField,
-                              ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField)
+                              ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField,
+                              DecimalField, JSONField, FloatField, TextField, DateTimeField)
 from apps.shared.models import UUIDBaseModel, CreatedBaseModel
 
 WEEKDAY_CHOICES = [
@@ -16,9 +17,21 @@ WEEKDAY_CHOICES = [
 ]
 
 
+class Park(Model):
+    name = CharField(max_length=100)
+    lat = FloatField()
+    lng = FloatField()
+    size = IntegerField(help_text="Size in acres")
+
+    def __str__(self):
+        return self.name
+
+
+    def __str__(self):
+        return self.name
+
 class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
-
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -35,7 +48,8 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
     duration = DurationField(default=timedelta(minutes=60))
-    # LOCATION
+    price = PositiveIntegerField()
+    description = TextField(blank=True)
 
     class Meta:
         verbose_name = 'Service'
