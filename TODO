@@ -58,9 +58,7 @@ TZ:
 
 1. db togrilash, root togrilash
 
-2. django commands qoshish
-python3 manage.py add-moderator 5
-5ta moderator qoshish kk
+2.
 
 3. barcha id lar uuid bolishi kerak
 
@@ -130,3 +128,9 @@ task 08
 service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 
+
+
+TASK
+1. django commands qoshish
+python3 manage.py add-moderator 5
+5ta moderator qoshish kk
