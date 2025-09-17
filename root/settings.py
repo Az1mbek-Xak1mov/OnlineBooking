@@ -19,8 +19,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,12 +28,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app',
     'authentication',
-
     'rest_framework',
     'drf_spectacular',
     'drf_spectacular_sidecar',
-
     'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
@@ -50,7 +47,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'root.urls'
 AUTH_USER_MODEL = 'authentication.User'
-
 
 TEMPLATES = [
     {
@@ -156,8 +152,16 @@ REDIS_DB = os.getenv('REDIS_DB')
 
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-# ACCOUNT_USERNAME_REQUIRED = False
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_AUTHENTICATION_METHOD = 'email'
-# ACCOUNT_LOGIN_METHODS = {'email'}
+MAP_WIDGETS = {
+    "Leaflet": {
+        "PointField": {
+            "mapOptions": {"zoom": 12, "scrollWheelZoom": False},
+            "tileLayer": {
+                "urlTemplate": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "options": {"maxZoom": 20},
+            },
+            "markerFitZoom": 14,
+            "showZoomNavigation": True,
+        }
+    }
+}

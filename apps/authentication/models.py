@@ -14,7 +14,7 @@ class User(AbstractUser, UUIDBaseModel):
     username = None
     phone_number = CharField(max_length=20, unique=True)
     email = EmailField(blank=True, null=True, unique=False)
-    type = CharField(choices=Type.choices, max_length=15)
+    type = CharField(choices=Type.choices, max_length=15,default=Type.CUSTOMER)
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
