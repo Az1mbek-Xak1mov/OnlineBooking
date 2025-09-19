@@ -58,7 +58,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
-    duration = DurationField(default=timedelta(minutes=60))
+    duration = DurationField(default=timedelta(minutes=60)) # TODO validator qoshish kk 60 ga karralimi? + pg check
     price = PositiveIntegerField()
     description = TextField(blank=True)
 
@@ -72,7 +72,6 @@ class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     start_time = TimeField()
     end_time = TimeField()
-    is_working = BooleanField(default=True)
 
     class Meta:
         ordering = ("weekday", "start_time")

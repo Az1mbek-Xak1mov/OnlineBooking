@@ -114,11 +114,16 @@ service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 
 TASK
-1. django commands qoshish (service, category, user qosha oladigan faker orqali)
-2. help_text, verbose_name larni yozib chiqish
-3. botini qoshish
+
+
+task
+1. argon2 password uchun
+2. django commands qoshish (service, category, user qosha oladigan faker orqali)
+3. duration qoshish
+api/v1/bookings (15, 30, 1h)
+
+4. botini qoshish
 (category, talab taklif, oxirgi xizmat, my orders)
 
 
-TODO teacher
-leaflet
+

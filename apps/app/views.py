@@ -4,24 +4,22 @@ from django.db.transaction import atomic
 from django.shortcuts import render  # noqa
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, ListAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+
 from app.models import Service, Booking, ServiceCategory
 from app.permissions import IsProvider
-from app.serializers import ServiceSerializer, BookingSerializer, ServiceRetrieveModelSerializer, \
+from app.serializers import ServiceModelSerializer, BookingSerializer, ServiceRetrieveModelSerializer, \
     ServiceCategoryModelSerializer, BookingHistorySerializer
 
+
 @extend_schema(tags=['Service'])
-class ServiceViewSet(ModelViewSet):
-    queryset = Service.objects.all().select_related("owner", "category")
-    serializer_class = ServiceSerializer
+class ServiceListCreateAPIView(ListCreateAPIView):
+    queryset = Service.objects.select_related("owner", "category")
+    serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(owner=user)
 
 @extend_schema(tags=['Booking'])
 class BookingCreateAPIView(CreateAPIView):
@@ -39,7 +37,7 @@ class BookingCreateAPIView(CreateAPIView):
 
         with atomic():
             agg = Booking.objects.select_for_update().filter(
-                service=service, weekday=date_obj,start_time__lte=start_time, end_time__gte=start_time
+                service=service, weekday=date_obj, start_time__lte=start_time, end_time__gte=start_time
             ).aggregate(total=Coalesce(Sum("seats"), 0))
             booked = agg["total"] or 0
             if booked + seats > service.capacity:
@@ -71,6 +69,7 @@ class ServiceCategoryListAPIView(ListAPIView):
     serializer_class = ServiceCategoryModelSerializer
     queryset = ServiceCategory.objects.all()
 
+
 @extend_schema(tags=['Booking'])
 class UserBookingHistoryListAPIView(ListAPIView):
     serializer_class = BookingHistorySerializer
@@ -80,5 +79,3 @@ class UserBookingHistoryListAPIView(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Booking.objects.filter(user=user)
-
-

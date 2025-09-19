@@ -1,7 +1,8 @@
 from datetime import datetime, date, timedelta
 
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import ModelSerializer,TimeField
+from rest_framework.fields import CurrentUserDefault, HiddenField
+from rest_framework.serializers import ModelSerializer, TimeField
 
 from app.models import ServiceSchedule, Booking, Service, ServiceCategory
 
@@ -27,6 +28,7 @@ class ServiceScheduleSerializer(ModelSerializer):
         ],
         allow_null=False
     )
+
     class Meta:
         model = ServiceSchedule
         fields = ("weekday", "start_time", "end_time")
@@ -36,13 +38,15 @@ class ServiceScheduleSerializer(ModelSerializer):
             raise ValidationError("start_time must be before end_time")
         return data
 
-class ServiceSerializer(ModelSerializer):
+
+class ServiceModelSerializer(ModelSerializer):
+    owner = HiddenField(default=CurrentUserDefault())
     schedules = ServiceScheduleSerializer(many=True, required=False)
 
     class Meta:
         model = Service
-        fields = ("id", "owner","name","price","description" ,"address", "capacity", "category", "schedules")
-        read_only_fields = ("id",)
+        fields = ("id", "name", 'owner', "price", "description", "address", "capacity", "category", "schedules")
+        read_only_fields = 'id',
 
     def create(self, validated_data):
         schedules_data = validated_data.pop("schedules", [])
@@ -50,9 +54,6 @@ class ServiceSerializer(ModelSerializer):
         for sch in schedules_data:
             ServiceSchedule.objects.create(service=service, **sch)
         return service
-
-    def validate(self, data):
-        return data
 
 
 class BookingSerializer(ModelSerializer):
@@ -86,23 +87,24 @@ class BookingSerializer(ModelSerializer):
 
         weekday = data["weekday"]
         start_time = data["start_time"]
-        matches = service.schedules.filter(weekday=weekday,
-                                           start_time__lte=start_time,
-                                           end_time__gt=start_time)
+        matches = service.schedules.filter(weekday=weekday, start_time__lte=start_time, end_time__gt=start_time)
         if not matches.exists():
             raise ValidationError("Service is closed at that time")
 
         return data
+
 
 class ServiceRetrieveModelSerializer(ModelSerializer):
     class Meta:
         model = Service
         fields = "__all__"
 
+
 class ServiceCategoryModelSerializer(ModelSerializer):
     class Meta:
         model = ServiceCategory
         fields = '__all__'
+
 
 class BookingHistorySerializer(ModelSerializer):
     class Meta:

@@ -25,14 +25,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # My Apps
     'app',
     'authentication',
+
+    # Third-party Apps
     'rest_framework',
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'rest_framework_simplejwt',
-    # 'leaflet',
-
 ]
 
 MIDDLEWARE = [
@@ -113,6 +115,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = join(BASE_DIR, 'static')
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = join(BASE_DIR, 'media')
 
@@ -132,6 +135,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     )
 }
 
@@ -164,7 +168,6 @@ MAP_WIDGETS = {
         }
     }
 }
-
 
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -3.7),  # default map center (lat, lon)

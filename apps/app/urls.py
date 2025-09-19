@@ -1,11 +1,12 @@
 from django.urls import path
 
-from app.views import BookingCreateAPIView, ServiceViewSet, ServiceRetrieveAPIView, ServiceCategoryListAPIView, \
+from app.views import BookingCreateAPIView, ServiceListCreateAPIView, ServiceRetrieveAPIView, ServiceCategoryListAPIView, \
     UserBookingHistoryListAPIView
 
 urlpatterns = [
     path("bookings/", BookingCreateAPIView.as_view(), name="booking-create"),
-    path("services/", ServiceViewSet.as_view(actions={'get':'list','post':'create'}), name="booking-create"),
+    path("services/", ServiceListCreateAPIView.as_view(), name="booking-create"),
+    # path("services/", ServiceViewSet.as_view(actions={'get':'list','post':'create'}), name="booking-create"),
 
     path("services/<uuid:pk>", ServiceRetrieveAPIView.as_view(), name="service-detail"),
     path("category/services/", ServiceCategoryListAPIView.as_view(), name="service-category-list"),
