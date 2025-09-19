@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, EmailField, TextChoices
+from django.db.models import CharField, EmailField, TextChoices, BigIntegerField
 
 from shared.manager import CustomUserManager
 from shared.models import UUIDBaseModel
@@ -16,6 +16,7 @@ class User(AbstractUser, UUIDBaseModel):
     phone_number = CharField(max_length=20, unique=True)
     email = EmailField(blank=True, null=True, unique=False)
     type = CharField(choices=Type.choices, max_length=15, default=Type.CUSTOMER)
+    telegram_id = BigIntegerField(unique=True, blank=True, null=True)
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
