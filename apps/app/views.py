@@ -13,7 +13,7 @@ from app.permissions import IsProvider
 from app.serializers import ServiceSerializer, BookingSerializer, ServiceRetrieveModelSerializer, \
     ServiceCategoryModelSerializer, BookingHistorySerializer
 
-@extend_schema(tags=['Service-Create-List'])
+@extend_schema(tags=['Service'])
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all().select_related("owner", "category")
     serializer_class = ServiceSerializer
@@ -23,7 +23,7 @@ class ServiceViewSet(ModelViewSet):
         user = self.request.user
         serializer.save(owner=user)
 
-@extend_schema(tags=['Booking-Create'])
+@extend_schema(tags=['Booking'])
 class BookingCreateAPIView(CreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = [IsAuthenticated]
@@ -59,19 +59,19 @@ class BookingCreateAPIView(CreateAPIView):
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=['Service-Get-id'])
+@extend_schema(tags=['Service'])
 class ServiceRetrieveAPIView(RetrieveAPIView):
     serializer_class = ServiceRetrieveModelSerializer
     queryset = Service.objects.all()
     lookup_field = 'pk'
 
 
-@extend_schema(tags=['Service-Category'])
+@extend_schema(tags=['Service'])
 class ServiceCategoryListAPIView(ListAPIView):
     serializer_class = ServiceCategoryModelSerializer
     queryset = ServiceCategory.objects.all()
 
-@extend_schema(tags=['User-Booking-History'])
+@extend_schema(tags=['Booking'])
 class UserBookingHistoryListAPIView(ListAPIView):
     serializer_class = BookingHistorySerializer
     queryset = Booking.objects.all()

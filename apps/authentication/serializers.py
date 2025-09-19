@@ -4,6 +4,7 @@ from random import randint  # noqa
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
 from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from authentication.models import User
 
@@ -76,3 +77,34 @@ class VerifyOtpSerializer(Serializer):
             raise ValidationError("Phone number must be 12 digits, example: 998 00 000 00 00")
 
         return clean_phone_number
+
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data.update({
+            "user": {
+                "id": self.user.id,
+                "username": self.user.username,
+                "email": self.user.email,
+                "first_name": self.user.first_name,
+                "last_name": self.user.last_name,
+            }
+        })
+        return data
+
+
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+

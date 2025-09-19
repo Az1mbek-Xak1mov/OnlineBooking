@@ -3,17 +3,18 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
 from authentication.models import User
 from authentication.serializers import (UserCreateSerializer,
-                                             UserRegistrationSerializer,
-                                             VerifyOtpSerializer)
+                                        UserRegistrationSerializer,
+                                        VerifyOtpSerializer, CustomTokenObtainPairSerializer)
 from authentication.utils import OtpService, generate_code
 
 
-@extend_schema(tags=['Auth/Register'])
+@extend_schema(tags=['Auth'])
 class RegisterApiView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -42,7 +43,7 @@ class RegisterApiView(CreateAPIView):
         )
 
 
-@extend_schema(tags=['Auth/Register'])
+@extend_schema(tags=['Auth'])
 class VerifyPhoneNumberAPIView(CreateAPIView):
     serializer_class = VerifyOtpSerializer
 
@@ -69,11 +70,21 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
         return Response(UserCreateSerializer(user).data, status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=['Auth/Login'])
+@extend_schema(tags=['Auth'])
 class CustomTokenObtainPairView(TokenObtainPairView):
-    pass
+    serializer_class = CustomTokenObtainPairSerializer
 
 
-@extend_schema(tags=['Auth/Login'])
+@extend_schema(tags=['Auth'])
 class CustomTokenRefreshView(TokenRefreshView):
     pass
+
+
+
+@extend_schema(tags=['Auth'], responses={200: UserCreateSerializer})
+class GetMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserCreateSerializer(request.user)
+        return Response(serializer.data)
