@@ -1,5 +1,5 @@
 from django.db.models import Func, Model
-from django.db.models.fields import UUIDField, DateTimeField
+from django.db.models.fields import DateTimeField, UUIDField
 
 
 class GenRandomUUID(Func):

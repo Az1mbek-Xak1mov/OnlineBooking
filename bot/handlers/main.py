@@ -1,18 +1,20 @@
 import os
+
 import django
-from aiogram import F, Dispatcher
-from aiogram.types import Message
+from aiogram import Dispatcher, F
 from aiogram.filters import Command
-from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from authentication.models import User
 from app.models import Booking
+from authentication.models import User
+
 from bot.buttons.reply import entr_button, main_menu_buttons
 
 online_booking = Dispatcher()

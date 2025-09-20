@@ -1,9 +1,11 @@
 import asyncio
 import logging
-from os import getenv
 import sys
+from os import getenv
+
 from aiogram import Bot
 from dotenv import load_dotenv
+
 from bot.handlers.main import online_booking
 
 load_dotenv()

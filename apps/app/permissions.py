@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsProvider(BasePermission):
@@ -7,4 +7,3 @@ class IsProvider(BasePermission):
             return True
         user = request.user
         return user and user.is_authenticated and user.is_provider
-        # return bool(user and user.is_authenticated and getattr(user, "type", None) == "provider")

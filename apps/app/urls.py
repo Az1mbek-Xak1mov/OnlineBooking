@@ -1,7 +1,7 @@
+from app.views import (BookingCreateAPIView, ServiceCategoryListAPIView,
+                       ServiceListCreateAPIView, ServiceRetrieveAPIView,
+                       UserBookingHistoryListAPIView)
 from django.urls import path
-
-from app.views import BookingCreateAPIView, ServiceListCreateAPIView, ServiceRetrieveAPIView, ServiceCategoryListAPIView, \
-    UserBookingHistoryListAPIView
 
 urlpatterns = [
     path("bookings/", BookingCreateAPIView.as_view(), name="booking-create"),

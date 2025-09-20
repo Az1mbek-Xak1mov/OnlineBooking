@@ -1,3 +1,9 @@
+from authentication.models import User
+from authentication.serializers import (CustomTokenObtainPairSerializer,
+                                        UserCreateSerializer,
+                                        UserRegistrationSerializer,
+                                        UserSerializer, VerifyOtpSerializer)
+from authentication.utils import OtpService, generate_code
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -6,12 +12,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
-
-from authentication.models import User
-from authentication.serializers import (UserCreateSerializer,
-                                        UserRegistrationSerializer,
-                                        VerifyOtpSerializer, CustomTokenObtainPairSerializer)
-from authentication.utils import OtpService, generate_code
 
 
 @extend_schema(tags=['Auth'])
@@ -53,7 +53,6 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
 
         phone = serializer.validated_data['phone_number']
         otp_code = serializer.validated_data['otp_code']
-        print(otp_code)
         otp_service = OtpService()
         valid, user_data = otp_service.verify_otp(phone, otp_code, purpose='register')
         print("DEBUG verify result:", valid, user_data)
@@ -80,11 +79,10 @@ class CustomTokenRefreshView(TokenRefreshView):
     pass
 
 
-
-@extend_schema(tags=['Auth'], responses={200: UserCreateSerializer})
+@extend_schema(tags=['Auth'], responses={200: UserSerializer})
 class GetMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserCreateSerializer(request.user)
+        serializer = UserSerializer(request.user)
         return Response(serializer.data)

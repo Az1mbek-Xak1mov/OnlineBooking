@@ -1,17 +1,20 @@
+from app.models import Booking, Service, ServiceCategory
+from app.permissions import IsProvider
+from app.serializers import (BookingHistorySerializer, BookingSerializer,
+                             ServiceCategoryModelSerializer,
+                             ServiceModelSerializer,
+                             ServiceRetrieveModelSerializer)
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.transaction import atomic
 from django.shortcuts import render  # noqa
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, ListAPIView, ListCreateAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.generics import (CreateAPIView, ListAPIView,
+                                     ListCreateAPIView, RetrieveAPIView)
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-
-from app.models import Service, Booking, ServiceCategory
-from app.permissions import IsProvider
-from app.serializers import ServiceModelSerializer, BookingSerializer, ServiceRetrieveModelSerializer, \
-    ServiceCategoryModelSerializer, BookingHistorySerializer
 
 
 @extend_schema(tags=['Service'])

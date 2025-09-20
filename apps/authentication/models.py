@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, EmailField, TextChoices, BigIntegerField
-
+from django.db.models import (BigIntegerField, CharField, EmailField,
+                              TextChoices)
 from shared.manager import CustomUserManager
 from shared.models import UUIDBaseModel
 
@@ -28,16 +28,16 @@ class User(AbstractUser, UUIDBaseModel):
 
     @property
     def is_provider(self):
-        return self.type == self.Type.PROVIDER  # TODO style
+        return self.type == self.Type.PROVIDER
 
     @property
     def is_admin(self):
-        return self.type == 'admin'
+        return self.type == self.Type.ADMIN
 
     @property
     def is_moderator(self):
-        return self.type == 'moderator'
+        return self.type == self.Type.MODERATOR
 
     @property
     def is_customer(self):
-        return self.type == 'customer'
+        return self.type == self.Type.CUSTOMER

@@ -1,12 +1,12 @@
 import re
 from random import randint  # noqa
+from typing import Any, Dict
 
+from authentication.models import User
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-from authentication.models import User
 
 
 class UserRegistrationSerializer(ModelSerializer):
@@ -52,8 +52,8 @@ class UserRegistrationSerializer(ModelSerializer):
 class UserCreateSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = "phone_number", "password", "first_name", "last_name"
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = "id", "phone_number", "password", "first_name", "last_name"
+        extra_kwargs = {"password": {"write_only": True}, "id": {"read_only": True}}
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -79,7 +79,6 @@ class VerifyOtpSerializer(Serializer):
         return clean_phone_number
 
 
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -87,24 +86,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data.update({
-            "user": {
-                "id": self.user.id,
-                "username": self.user.username,
-                "email": self.user.email,
-                "first_name": self.user.first_name,
-                "last_name": self.user.last_name,
-            }
-        })
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        data: Dict[str, Any] = super().validate(attrs)
+        data["user"] = {
+            "id": self.user.id,
+            "phone_number": self.user.phone_number,
+            "email": self.user.email,
+            "type": self.user.type,
+            "telegram_id": self.user.telegram_id,
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
+            "date_joined": self.user.date_joined,
+        }
         return data
-
-
 
 
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
-
+        fields = "id", 'phone_number', 'email', 'telegram_id', 'first_name', 'last_name', 'date_joined'

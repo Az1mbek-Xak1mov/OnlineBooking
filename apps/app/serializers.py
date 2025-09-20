@@ -1,10 +1,7 @@
-from datetime import datetime, date, timedelta
-
+from app.models import Booking, Service, ServiceCategory, ServiceSchedule
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, TimeField
-
-from app.models import ServiceSchedule, Booking, Service, ServiceCategory
 
 
 class ServiceScheduleSerializer(ModelSerializer):

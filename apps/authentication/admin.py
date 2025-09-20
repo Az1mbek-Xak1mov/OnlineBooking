@@ -3,7 +3,6 @@ from django.contrib.admin import ModelAdmin
 
 from .models import User
 
-
 # TODO admin.py ni bolaklash proxy, users
 
 class Customer(User):
@@ -40,7 +39,7 @@ class CustomerAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.Type.CUSTOMER)
+        return super().get_queryset(request).filter(type=User.Type.CUSTOMER)
 
 
 @admin.register(Provider)
@@ -49,7 +48,7 @@ class ProviderAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.Type.PROVIDER)
+        return super().get_queryset(request).filter(type=User.Type.PROVIDER)
 
 
 @admin.register(AdminUser)
@@ -58,7 +57,7 @@ class AdminUserModelAdmin(ModelAdmin):  # TODO voris olish klass
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.Type.ADMIN)
+        return super().get_queryset(request).filter(type=User.Type.ADMIN)
 
 
 @admin.register(Moderator)
@@ -67,4 +66,4 @@ class ModeratorAdmin(ModelAdmin):
     search_fields = ("phone_number", "email", "first_name", "last_name")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(role=User.Type.MODERATOR)
+        return super().get_queryset(request).filter(type=User.Type.MODERATOR)

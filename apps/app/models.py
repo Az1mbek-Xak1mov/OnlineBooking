@@ -1,13 +1,15 @@
-from datetime import datetime, timedelta, date as date_cls
+from datetime import date as date_cls
+from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
-from django.db.models import (CASCADE, SET_NULL, CharField,
-                              ForeignKey, PositiveIntegerField, TimeField, Model, IntegerField, Index, DurationField,
-                              FloatField, TextField, TextChoices)
-from django.db.models.fields import DateField, BooleanField
+from django.db.models import (CASCADE, SET_NULL, CharField, DurationField,
+                              FloatField, ForeignKey, Index, IntegerField,
+                              Model, PositiveIntegerField, TextChoices,
+                              TextField, TimeField)
+from django.db.models.fields import DateField
 from django.utils import timezone
 
-from apps.shared.models import UUIDBaseModel, CreatedBaseModel
+from apps.shared.models import CreatedBaseModel, UUIDBaseModel
 
 WEEKDAY_NAME_TO_INDEX = {
     "monday": 0,
@@ -58,7 +60,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     name = CharField(max_length=255)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
-    duration = DurationField(default=timedelta(minutes=60)) # TODO validator qoshish kk 60 ga karralimi? + pg check
+    duration = DurationField(default=timedelta(minutes=60))  # TODO validator qoshish kk 60 ga karralimi? + pg check
     price = PositiveIntegerField()
     description = TextField(blank=True)
 
