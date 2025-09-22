@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 last_name=fake.last_name(),
                 type=random.choice([User.Type.CUSTOMER, User.Type.PROVIDER]),
                 telegram_id=random.randint(10000000, 99999999),
-                password="12345",
+                password="1",
             )
             users.append(u)
         self.stdout.write(self.style.SUCCESS(f"✅ Created {len(users)} users"))
