@@ -5,14 +5,16 @@ from aiogram import Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from asgiref.sync import sync_to_async
 from django.utils import timezone
+
+from bot.buttons.inline import make_inline_btn_azim, build_services_markup
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from app.models import Booking
+from app.models import Booking, ServiceCategory
 from authentication.models import User
 
 from bot.buttons.reply import entr_button, main_menu_buttons
@@ -104,4 +106,47 @@ async def process_orders(message: Message):
         await message.answer(text)
 
 
+@online_booking.message(F.text == "Category")
+async def process_categories(message: Message):
+    categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
+
+    buttons = [i.name for i in categories]
+    print(buttons,type(buttons))
+    rows = [3]
+    await message.answer('Categorylar', reply_markup=make_inline_btn_azim(buttons, rows))
+
+
+
+
+@online_booking.callback_query()
+async def process_category_callback(callback: CallbackQuery):
+    categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
+    category_names = [c.name for c in categories]
+
+    if callback.data in category_names:
+        category = await sync_to_async(lambda: ServiceCategory.objects.get(name=callback.data))()
+        services = await sync_to_async(lambda: list(category.services.all()))()
+
+        if not services:
+            await callback.message.edit_text("❌ Bu kategoriyada hozircha xizmatlar yo‘q")
+            return
+
+        markup = build_services_markup(services, category.id, page=0)
+        await callback.message.edit_text(
+            f"Siz kategoriya tanladingiz: {category.name}\nXizmatni tanlang:",
+            reply_markup=markup
+        )
+        await callback.answer()
+
+
+    elif callback.data.startswith("service_page_"):
+        payload = callback.data.replace("service_page_", "", 1)
+        cat_id, page = payload.rsplit("_", 1)
+        page = int(page)
+        services = await sync_to_async(
+            lambda: list(ServiceCategory.objects.get(id=cat_id).services.all())
+        )()
+        markup = build_services_markup(services, cat_id, page=page)
+        await callback.message.edit_reply_markup(reply_markup=markup)
+        await callback.answer()
 
