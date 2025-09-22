@@ -2,10 +2,10 @@ from datetime import date as date_cls
 from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
-from django.db.models import (CASCADE, SET_NULL, CharField, DurationField,
-                              FloatField, ForeignKey, Index, IntegerField,
-                              Model, PositiveIntegerField, TextChoices,
-                              TextField, TimeField)
+from django.db.models import (CASCADE, SET_NULL, CharField,
+                              DurationField, FloatField, ForeignKey, Index,
+                              IntegerField, Model, PositiveIntegerField, Q,
+                              TextChoices, TextField, TimeField)
 from django.db.models.fields import DateField
 from django.utils import timezone
 
@@ -67,6 +67,10 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     class Meta:
         verbose_name = 'Service'
         verbose_name_plural = 'Services'
+
+        # constraints = [
+        #     CheckConstraint(name='rating_check_constraints')
+        # ]
 
 
 class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):

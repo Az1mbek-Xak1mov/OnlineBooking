@@ -1,25 +1,13 @@
 
+
+
+
+
 TZ:
     Online Booking
     1. service nomlari listi (xizmatlar royhatini chiqarish)
     2. joylar band qilish (nechta qolganini korib turish)
     3. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
-
-Jahongir:
-    1. flake8, isort qoshish ☑️
-
-    1.5
-    token olish nomer orqali bolish kk  ☑️
-
-    2. register bomaydi, faqat login bor (nomer orqali)
-    nomerga sms code yuborish orqali login qilinadi       ☑️
-
-    4. adminkada adminlar, providerlar, customerlar, moderatorlar db alohida chiqishi kk ☑️
-
-    6. barcha id lar uuid bolishi kerak ☑️
-
-    7. fake data db toldirish 5-10 | 1. User ☑️;
-
 
 
 
@@ -49,10 +37,13 @@ joylar soni
 TASK
 1. argon2 password uchun +
 2. django commands qoshish (service, category, user qosha oladigan faker orqali), optimize qilish
-3. duration qoshish
-api/v1/bookings (15, 30, 1h)
 
-service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
+
+3. duration qoshish
+api/v1/bookings (15, 30, 1h) # TODO task 1
+
+service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60) # TODO task 2
+
 
 4. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
 (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
@@ -62,6 +53,7 @@ keyin filter qoshiladi (is_read va created_at boyicha)
 5. botini qoshish
 (category, talab taklif, oxirgi xizmat, my orders)
 
+
 6. serviceni bosh vaqtlarini oladigan api kerak
-api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
+api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak) # TODO task 3
 

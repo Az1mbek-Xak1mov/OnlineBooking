@@ -1,8 +1,9 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import (BigIntegerField, CharField, EmailField,
-                              TextChoices)
+from django.db.models import (CASCADE, BigIntegerField, BooleanField,
+                              CharField, EmailField, ForeignKey, TextChoices,
+                              TextField)
 from shared.manager import CustomUserManager
-from shared.models import UUIDBaseModel
+from shared.models import CreatedBaseModel, UUIDBaseModel
 
 
 class User(AbstractUser, UUIDBaseModel):
@@ -41,3 +42,16 @@ class User(AbstractUser, UUIDBaseModel):
     @property
     def is_customer(self):
         return self.type == self.Type.CUSTOMER
+
+
+class RoleChange(UUIDBaseModel, CreatedBaseModel):
+    user = ForeignKey('authentication.User', CASCADE, related_name='role_change_requests')
+    message = TextField()
+    is_read = BooleanField(default=False, editable=False)
+    is_accepted = BooleanField(null=True, blank=True,
+                               help_text='If you accept, the users role will be changed from Customer to Provider')
+
+    class Meta:
+        verbose_name = 'Change Role Request'
+        verbose_name_plural = 'Change Role Requests'
+        ordering = ['-created_at', '-is_read']

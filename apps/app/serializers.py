@@ -1,4 +1,7 @@
 from app.models import Booking, Service, ServiceCategory, ServiceSchedule
+from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, TimeField
@@ -83,14 +86,44 @@ class BookingModelSerializer(ModelSerializer):
 
         weekday = data["weekday"]
         start_time = data["start_time"]
-        matches = service.schedules.filter(weekday=weekday, start_time__lte=start_time, end_time__gt=start_time)
+
+        matches = service.schedules.filter(
+            weekday=weekday,
+            start_time__lte=start_time,
+            end_time__gt=start_time
+        )
         if not matches.exists():
             raise ValidationError("Service is closed at that time")
 
         return data
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        user = validated_data.pop("user", self.context["request"].user)
+        service = validated_data["service"]
+        weekday = validated_data["weekday"]
+        start_time = validated_data["start_time"]
+        seats = validated_data.get("seats", 1)
+
+        with transaction.atomic():
+            agg = Booking.objects.select_for_update().filter(
+                service=service,
+                weekday=weekday,
+                start_time__lte=start_time,
+                end_time__gte=start_time
+            ).aggregate(total=Coalesce(Sum("seats"), 0))
+            booked = agg["total"] or 0
+
+            if booked + seats > service.capacity:
+                raise ValidationError("Not enough capacity for this time slot")
+
+            booking = Booking.objects.create(
+                service=service,
+                user=user,
+                weekday=weekday,
+                start_time=start_time,
+                seats=seats
+            )
+        return booking
 
 
 class ServiceRetrieveModelSerializer(ModelSerializer):

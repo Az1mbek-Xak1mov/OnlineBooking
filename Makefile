@@ -8,4 +8,8 @@ admin:
 fake-datas:
 	python manage.py loaddata users
 
-# TODO flake8 isort
+flake8:
+	flake8 .
+
+isort:
+	isort .

@@ -1,21 +1,15 @@
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
-from django.db.transaction import atomic
-from django.shortcuts import render  # noqa
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     ListCreateAPIView, RetrieveAPIView)
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
-
 from app.models import Booking, Service, ServiceCategory
 from app.permissions import IsProvider
 from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
                              ServiceCategoryModelSerializer,
                              ServiceModelSerializer,
                              ServiceRetrieveModelSerializer)
+from django.shortcuts import render  # noqa
+from drf_spectacular.utils import extend_schema
+from rest_framework.generics import (CreateAPIView, ListAPIView,
+                                     ListCreateAPIView, RetrieveAPIView)
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
 
 @extend_schema(tags=['Service'])
@@ -30,35 +24,8 @@ class BookingCreateAPIView(CreateAPIView):
     serializer_class = BookingModelSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs): # TODO logic ni serializerda yozish
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        service = serializer.validated_data["service"]
-        date_obj = serializer.validated_data["weekday"]
-        start_time = serializer.validated_data["start_time"]
-        seats = serializer.validated_data.get("seats", 1)
-        user = request.user
-
-        with atomic():
-            agg = Booking.objects.select_for_update().filter(
-                service=service, weekday=date_obj, start_time__lte=start_time, end_time__gte=start_time
-            ).aggregate(total=Coalesce(Sum("seats"), 0))
-            booked = agg["total"] or 0
-            if booked + seats > service.capacity:
-                return Response(
-                    {"detail": "Not enough capacity for this time slot"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            booking = Booking.objects.create(
-                service=service,
-                user=user,
-                weekday=date_obj,
-                start_time=start_time,
-                seats=seats
-            )
-
-        out = BookingModelSerializer(booking, context={"request": request})
-        return Response(out.data, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 @extend_schema(tags=['Service'])

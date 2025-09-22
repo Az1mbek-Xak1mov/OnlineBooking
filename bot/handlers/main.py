@@ -5,18 +5,18 @@ from aiogram import Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
 from django.utils import timezone
 
-from bot.buttons.inline import make_inline_btn_azim, build_services_markup
+from bot.buttons.inline import build_services_markup, make_inline_btn_azim
 from bot.const import ENTER_
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from app.models import Booking, ServiceCategory, Service
+from app.models import Booking, Service, ServiceCategory
 from authentication.models import User
 
 from bot.buttons.reply import entr_button, main_menu_buttons

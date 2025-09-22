@@ -2,9 +2,9 @@ import re
 from random import randint  # noqa
 from typing import Any, Dict
 
-from authentication.models import User
+from authentication.models import RoleChange, User
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CharField
+from rest_framework.fields import CharField, UUIDField
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -105,3 +105,18 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = "id", 'phone_number', 'email', 'telegram_id', 'first_name', 'last_name', 'date_joined'
+
+
+class RoleChangeModelSerializer(ModelSerializer):
+    user = UUIDField(read_only=True, source="user.id")
+
+    class Meta:
+        model = RoleChange
+        fields = ["id", "user", "message", "is_read", "is_accepted", "created_at"]
+        read_only_fields = ["id", "user", "is_read", "is_accepted", "created_at"]
+
+
+class MyRequestsModelSerializer(ModelSerializer):
+    class Meta:
+        model = RoleChange
+        fields = '__all__'

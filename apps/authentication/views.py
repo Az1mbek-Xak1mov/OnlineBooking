@@ -1,15 +1,15 @@
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-from authentication.models import User
+from authentication.models import RoleChange, User
 from authentication.serializers import (CustomTokenObtainPairSerializer,
+                                        MyRequestsModelSerializer,
+                                        RoleChangeModelSerializer,
                                         UserCreateSerializer,
                                         UserRegistrationSerializer,
                                         UserSerializer, VerifyOtpSerializer)
 from authentication.utils import OtpService, generate_code
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
@@ -90,3 +90,23 @@ class GetMeView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+@extend_schema(tags=['Auth'], responses={200: RoleChangeModelSerializer})
+class RoleChangeCrateAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RoleChangeModelSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+@extend_schema(tags=['Auth'], responses={200: MyRequestsModelSerializer})
+class MyRequestsListAPIView(ListAPIView):
+    queryset = RoleChange.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = MyRequestsModelSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(user=self.request.user)
