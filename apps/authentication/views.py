@@ -1,3 +1,5 @@
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from authentication.models import User
 from authentication.serializers import (CustomTokenObtainPairSerializer,
                                         UserCreateSerializer,
@@ -7,7 +9,7 @@ from authentication.utils import OtpService, generate_code
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
@@ -18,6 +20,7 @@ from rest_framework_simplejwt.views import (TokenObtainPairView,
 class RegisterApiView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
+    authentication_classes = ()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -46,6 +49,7 @@ class RegisterApiView(CreateAPIView):
 @extend_schema(tags=['Auth'])
 class VerifyPhoneNumberAPIView(CreateAPIView):
     serializer_class = VerifyOtpSerializer
+    authentication_classes = ()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -1,19 +1,9 @@
-Kim nma qilsa usha narsalardi yozib ketadi:
-
 
 TZ:
     Online Booking
     1. service nomlari listi (xizmatlar royhatini chiqarish)
     2. joylar band qilish (nechta qolganini korib turish)
     3. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
-
-Salimjon:
-    5. service va category modelini yozish ☑️
-
-
-Abror:
-darsdan keyin maslahat qilamiz
-
 
 Jahongir:
     1. flake8, isort qoshish ☑️
@@ -32,38 +22,7 @@ Jahongir:
 
 
 
-Azim:
-something
 
-Abduravshan:
-
-
-meni ham yozib quyinglareeeee
-
-
-
-UNFINISHED TASKS:
-    3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
-    (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
-    keyin filter qoshiladi (is_read va created_at boyicha)
-
-
-
-DOCS:
-    flake8 . : Check syntax and style issues
-    isort . : Automatically sort imports
-
-TZ:
-
-
-1. db togrilash, root togrilash
-
-2.
-
-3. barcha id lar uuid bolishi kerak
-
-3.5
-service category
 
 
 4. services(name, location) modeli
@@ -72,18 +31,6 @@ type (soatlik, navbatlik)
 joylar soni
 
 
-5. schedule
-
-
-6. book (misol uchun stol tennisga band qilish  servisni tanlaydi,
-soatini,
-duration-qancha vaqtligi
-joylar soni
-)
-
-
-
-7. user(provider, customer)
 
 
 
@@ -92,38 +39,29 @@ joylar soni
 
 
 
-3. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
-(zayavka modeli ochiladi, oqildi oqilmadi[is_read])
-keyin filter qoshiladi (is_read va created_at boyicha)
-
-6. barcha id lar uuid bolishi kerak
 
 
 
-task 08
-1. shared(apps, models) apps
-
-
-4. oxirgi xizmat (oxirgi xizmatlarni eslab qolishi kk)
-5. tlg ni tasdiqlash share contact ni bosganda, osha userga tlg id biriktiriladi
-
-
-service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 
 
 
 TASK
-
-
-task
-1. argon2 password uchun
-2. django commands qoshish (service, category, user qosha oladigan faker orqali)
+1. argon2 password uchun +
+2. django commands qoshish (service, category, user qosha oladigan faker orqali), optimize qilish
 3. duration qoshish
 api/v1/bookings (15, 30, 1h)
 
-4. botini qoshish
+service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
+
+4. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
+(zayavka modeli ochiladi, oqildi oqilmadi[is_read])
+keyin filter qoshiladi (is_read va created_at boyicha)
+
+
+5. botini qoshish
 (category, talab taklif, oxirgi xizmat, my orders)
 
-5. frontend
+6. serviceni bosh vaqtlarini oladigan api kerak
+api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
 

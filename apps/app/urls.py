@@ -10,5 +10,5 @@ urlpatterns = [
 
     path("services/<uuid:pk>", ServiceRetrieveAPIView.as_view(), name="service-detail"),
     path("category/services/", ServiceCategoryListAPIView.as_view(), name="service-category-list"),
-    path("user/booking/hostory", UserBookingHistoryListAPIView.as_view(), name="user-booking-history"),
+    path("users/booking/hostory", UserBookingHistoryListAPIView.as_view(), name="user-booking-history"),
 ]

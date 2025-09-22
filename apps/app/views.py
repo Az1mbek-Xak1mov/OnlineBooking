@@ -1,9 +1,3 @@
-from app.models import Booking, Service, ServiceCategory
-from app.permissions import IsProvider
-from app.serializers import (BookingHistorySerializer, BookingSerializer,
-                             ServiceCategoryModelSerializer,
-                             ServiceModelSerializer,
-                             ServiceRetrieveModelSerializer)
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.transaction import atomic
@@ -16,6 +10,13 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
+from app.models import Booking, Service, ServiceCategory
+from app.permissions import IsProvider
+from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
+                             ServiceCategoryModelSerializer,
+                             ServiceModelSerializer,
+                             ServiceRetrieveModelSerializer)
+
 
 @extend_schema(tags=['Service'])
 class ServiceListCreateAPIView(ListCreateAPIView):
@@ -26,10 +27,10 @@ class ServiceListCreateAPIView(ListCreateAPIView):
 
 @extend_schema(tags=['Booking'])
 class BookingCreateAPIView(CreateAPIView):
-    serializer_class = BookingSerializer
+    serializer_class = BookingModelSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs): # TODO logic ni serializerda yozish
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         service = serializer.validated_data["service"]
@@ -56,7 +57,7 @@ class BookingCreateAPIView(CreateAPIView):
                 seats=seats
             )
 
-        out = BookingSerializer(booking, context={"request": request})
+        out = BookingModelSerializer(booking, context={"request": request})
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
@@ -64,7 +65,6 @@ class BookingCreateAPIView(CreateAPIView):
 class ServiceRetrieveAPIView(RetrieveAPIView):
     serializer_class = ServiceRetrieveModelSerializer
     queryset = Service.objects.all()
-    lookup_field = 'pk'
 
 
 @extend_schema(tags=['Service'])
@@ -80,5 +80,5 @@ class UserBookingHistoryListAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return Booking.objects.filter(user=user)
+        qs = super().get_queryset()
+        return qs.filter(user=self.request.user)

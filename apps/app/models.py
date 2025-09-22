@@ -103,6 +103,7 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
         indexes = [
             Index(fields=["service", "weekday", "start_time", "end_time"]),
         ]
+        ordering = '-created_at',
         verbose_name = 'Booking'
         verbose_name_plural = 'Bookings'
 

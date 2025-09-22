@@ -7,14 +7,16 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
 from asgiref.sync import sync_to_async
+from django.shortcuts import aget_object_or_404
 from django.utils import timezone
 
 from bot.buttons.inline import make_inline_btn_azim, build_services_markup
+from bot.const import ENTER_
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from app.models import Booking, ServiceCategory
+from app.models import Booking, ServiceCategory, Service
 from authentication.models import User
 
 from bot.buttons.reply import entr_button, main_menu_buttons
@@ -32,9 +34,10 @@ async def cmd_start(message: Message):
     await message.answer("Salom! Kirish uchun tugmani bosing:", reply_markup=entr_button())
 
 
-@online_booking.message(F.text == "Krish/Entr")
+@online_booking.message(F.text == ENTER_)
 async def process_entry(message: Message, state: FSMContext):
-    user = await sync_to_async(lambda: User.objects.filter(telegram_id=message.from_user.id).first())()
+    user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
+    # user = await sync_to_async(lambda: User.objects.filter(telegram_id=message.from_user.id).first())()
     if user:
         await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
     else:
@@ -44,7 +47,7 @@ async def process_entry(message: Message, state: FSMContext):
 
 @online_booking.message(AuthState.waiting_for_phone)
 async def process_phone(message: Message, state: FSMContext):
-    phone = message.text
+    phone = message.text  # TODO nomerni tekshirish
     await state.update_data(phone=phone)
     await message.answer("Endi parolingizni kiriting:")
     await state.set_state(AuthState.waiting_for_password)
@@ -56,20 +59,14 @@ async def process_password(message: Message, state: FSMContext):
     data = await state.get_data()
     phone = data.get("phone")
 
-    user = await sync_to_async(lambda: User.objects.filter(phone_number=phone).first())()
+    user = await sync_to_async(lambda: User.objects.filter(phone_number=phone).first())() # TODO async qilish
 
     if not user:
         await message.answer("❌ Bunday telefon raqami bilan foydalanuvchi topilmadi!")
         await state.clear()
         return
 
-    is_valid = False
-    if hasattr(user, "check_password") and user.check_password(password):
-        is_valid = True
-    elif user.password == password:
-        is_valid = True
-
-    if is_valid:
+    if user.check_password(password):
         user.telegram_id = message.from_user.id
         await sync_to_async(user.save)()
         await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
@@ -86,7 +83,7 @@ async def last_orders(message: Message):
         await message.answer("❌ Siz ro'yxatdan o'tmagansiz!")
         return
 
-    orders = await sync_to_async(lambda: list(Booking.objects.filter(user=user)[:5]))()
+    orders = await sync_to_async(lambda: list(Booking.objects.filter(user=user).values_list('service__name')[:5]))()
     if orders:
         text = "\n".join([f"📌 Order #{o.id} - {o.status}" for o in orders])
     else:
@@ -94,11 +91,12 @@ async def last_orders(message: Message):
 
     await message.answer(text, reply_markup=main_menu_buttons())
 
+
 @online_booking.message(F.text == "My Orders")
 async def process_orders(message: Message):
-    user = await sync_to_async(lambda: User.objects.filter(telegram_id=message.from_user.id))()
+    # user = await sync_to_async(lambda: User.objects.filter(telegram_id=message.from_user.id))()
     now_time = timezone.now()
-    orders = await sync_to_async(lambda: list(Booking.objects.filter(user=user, end_time__gt=now_time)))()
+    orders = await sync_to_async(lambda: list(Booking.objects.filter(user__telegram_id=message.from_user.id, end_time__gt=now_time)))()
     if not orders:
         await message.answer("Sizda faol buyurtmalar yo‘q.")
     else:
@@ -111,11 +109,9 @@ async def process_categories(message: Message):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
 
     buttons = [i.name for i in categories]
-    print(buttons,type(buttons))
+    print(buttons, type(buttons))
     rows = [3]
     await message.answer('Categorylar', reply_markup=make_inline_btn_azim(buttons, rows))
-
-
 
 
 @online_booking.callback_query()
@@ -146,7 +142,8 @@ async def process_category_callback(callback: CallbackQuery):
         services = await sync_to_async(
             lambda: list(ServiceCategory.objects.get(id=cat_id).services.all())
         )()
+
+        # Service.objects.filter(category_id=cat_id)
         markup = build_services_markup(services, cat_id, page=page)
         await callback.message.edit_reply_markup(reply_markup=markup)
         await callback.answer()
-

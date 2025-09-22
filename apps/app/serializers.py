@@ -53,7 +53,7 @@ class ServiceModelSerializer(ModelSerializer):
         return service
 
 
-class BookingSerializer(ModelSerializer):
+class BookingModelSerializer(ModelSerializer):
     start_time = TimeField(
         format='%H:%M',
         input_formats=[
@@ -66,7 +66,6 @@ class BookingSerializer(ModelSerializer):
     )
 
     class Meta:
-
         model = Booking
         fields = ("id", "service", "user", "weekday", "start_time", "seats")
         read_only_fields = ("id", "user")
@@ -89,6 +88,9 @@ class BookingSerializer(ModelSerializer):
             raise ValidationError("Service is closed at that time")
 
         return data
+
+    def create(self, validated_data):
+        return super().create(validated_data)
 
 
 class ServiceRetrieveModelSerializer(ModelSerializer):
