@@ -32,12 +32,14 @@ class BookingCreateAPIView(CreateAPIView):
 class ServiceRetrieveAPIView(RetrieveAPIView):
     serializer_class = ServiceRetrieveModelSerializer
     queryset = Service.objects.all()
+    authentication_classes = ()
 
 
 @extend_schema(tags=['Service'])
 class ServiceCategoryListAPIView(ListAPIView):
     serializer_class = ServiceCategoryModelSerializer
     queryset = ServiceCategory.objects.all()
+    authentication_classes = ()
 
 
 @extend_schema(tags=['Booking'])
