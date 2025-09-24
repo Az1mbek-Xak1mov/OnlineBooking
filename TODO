@@ -40,9 +40,9 @@ TASK
 
 
 3. duration qoshish
-api/v1/bookings (15, 30, 1h) # TODO task 1
+api/v1/bookings (15, 30, 1h)
 
-service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60) # TODO task 2
+service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 
 4. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
@@ -55,5 +55,5 @@ keyin filter qoshiladi (is_read va created_at boyicha)
 
 
 6. serviceni bosh vaqtlarini oladigan api kerak
-api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak) # TODO task 3
+api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
 
