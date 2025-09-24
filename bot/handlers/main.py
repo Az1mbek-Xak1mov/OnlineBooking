@@ -7,7 +7,7 @@ from aiogram import Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
@@ -58,6 +58,8 @@ async def process_phone(message: Message, state: FSMContext):
         return
 
     await state.update_data(phone=phone)
+    # TODO nomerni bazadan izlash kk, agar bor bolsa, tlg_id set qilish, aks holda, password sorab register qilish kk
+
     await message.answer("Endi parolingizni kiriting:", reply_markup=None)
     await state.set_state(AuthState.waiting_for_password)
 

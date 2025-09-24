@@ -3,14 +3,6 @@
 
 
 
-TZ:
-    Online Booking
-    1. service nomlari listi (xizmatlar royhatini chiqarish)
-    2. joylar band qilish (nechta qolganini korib turish)
-    3. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
-
-
-
 
 
 4. services(name, location) modeli
@@ -49,16 +41,18 @@ service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
 keyin filter qoshiladi (is_read va created_at boyicha) +
 
-4.1 handler ni bolaklash
-
-
 
 5. botini qoshish
 (category, talab taklif, oxirgi xizmat, my orders)
+
+5.1 handler ni bolaklash
 
 
 6. serviceni bosh vaqtlarini oladigan api kerak
 api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
 
-
 7. barcha apilarga filter, search, pagination qoshish
+
+8. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
+
+9. leafletni togrilash (update qilishga kirganda, eski lokatsiyani korsatsin)
