@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from bot.buttons.inline import build_services_markup, make_inline_btn_azim, get_free_slots
 from bot.const import ENTER_
-from bot.buttons.reply import entr_button, main_menu_buttons
+from bot.buttons.reply import entr_button, main_menu_buttons, phone_request_button
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
@@ -40,21 +40,28 @@ async def process_entry(message: Message, state: FSMContext):
     if user:
         await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
     else:
-        await message.answer("Telefon raqamingizni yuboring:")
+        await message.answer(
+            "📞 Telefon raqamingizni yuboring:",
+            reply_markup=phone_request_button()
+        )
         await state.set_state(AuthState.waiting_for_phone)
-
 
 @online_booking.message(AuthState.waiting_for_phone)
 async def process_phone(message: Message, state: FSMContext):
-    phone = message.contact.phone_number if message.contact else message.text.strip()
+    if message.contact:
+        phone = message.contact.phone_number
+    else:
+        phone = message.text.strip()
 
     if not re.fullmatch(r"^\+?\d{9,15}$", phone):
-        await message.answer("❌ Noto‘g‘ri telefon raqam. Iltimos, qaytadan yuboring:")
+        await message.answer("❌ Notog‘ri telefon raqam. Iltimos, qaytadan yuboring:")
         return
 
     await state.update_data(phone=phone)
-    await message.answer("Endi parolingizni kiriting:")
+    await message.answer("Endi parolingizni kiriting:", reply_markup=None)
     await state.set_state(AuthState.waiting_for_password)
+
+
 
 
 @online_booking.message(AuthState.waiting_for_password)
@@ -69,7 +76,8 @@ async def process_password(message: Message, state: FSMContext):
         await state.clear()
         return
 
-    if user.check_password(password):
+    is_valid = await sync_to_async(user.check_password)(password)
+    if is_valid:
         user.telegram_id = message.from_user.id
         await sync_to_async(user.save)()
         await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
@@ -77,6 +85,7 @@ async def process_password(message: Message, state: FSMContext):
         await message.answer("❌ Notog‘ri parol!")
 
     await state.clear()
+
 
 
 @online_booking.message(F.text == "Oxirgi xizmat")
