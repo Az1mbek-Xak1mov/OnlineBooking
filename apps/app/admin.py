@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from .models import Park
+from .models import Park, ServiceSchedule
 
 
 class LeafletLocationWidget(forms.Widget):
@@ -52,3 +52,6 @@ class ParkAdmin(admin.ModelAdmin):
             "fields": ("location_map",),
         }),
     )
+@admin.register(ServiceSchedule)
+class ServiceScheduleAdmin(admin.ModelAdmin):
+    pass
