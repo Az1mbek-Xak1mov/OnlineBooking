@@ -139,13 +139,14 @@ class Command(BaseCommand):
         self.faker = Faker("uz_UZ")
 
         if kwargs.get("all"):
-            generated_item_names = self.model_list
-        else:
-            kwargs = {key: value for key, value in kwargs.items() if value is not None}
-            generated_item_names = set(kwargs).intersection(self.model_list)
-
-        for _name in generated_item_names:
-            if kwargs.get(_name) is None:
+            order = ["categories", "users", "services", "bookings", "rolechanges"]
+            for _name in order:
                 getattr(self, f"_generate_{_name}")()
-            else:
-                getattr(self, f"_generate_{_name}")(kwargs[_name])
+        else:
+            specified = {key: value for key, value in kwargs.items() if value is not None}
+            generated_item_names = [name for name in ["categories", "users", "services", "bookings", "rolechanges"] if
+                                    name in specified]
+
+            for _name in generated_item_names:
+                count = kwargs.get(_name)
+                getattr(self, f"_generate_{_name}")(count)
