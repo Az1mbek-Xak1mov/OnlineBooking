@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from apps.shared.models import CreatedBaseModel, UUIDBaseModel
 
-WEEKDAY_NAME_TO_INDEX = {
+WEEKDAY_NAME_TO_INDEX = { # TODO toliq olib tashash
     "monday": 0,
     "tuesday": 1,
     "wednesday": 2,

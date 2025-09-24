@@ -24,8 +24,8 @@ class BookingCreateAPIView(CreateAPIView):
     serializer_class = BookingModelSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
 
 
 @extend_schema(tags=['Service'])

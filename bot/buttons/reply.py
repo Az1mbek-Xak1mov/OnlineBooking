@@ -20,6 +20,7 @@ def entr_button():
     rows = [1]
     return make_reply(buttons, rows)
 
+
 def main_menu_buttons():
     buttons = [
         KeyboardButton(text="Category"),

@@ -57,6 +57,8 @@ class ServiceModelSerializer(ModelSerializer):
 
 
 class BookingModelSerializer(ModelSerializer):
+    user = HiddenField(default=CurrentUserDefault())
+
     start_time = TimeField(
         format='%H:%M',
         input_formats=[

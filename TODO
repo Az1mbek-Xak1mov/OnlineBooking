@@ -36,7 +36,7 @@ joylar soni
 
 TASK
 1. argon2 password uchun +
-2. django commands qoshish (service, category, user qosha oladigan faker orqali), optimize qilish
+2. django commands qoshish (service, category, user qosha oladigan faker orqali), optimize qilish +
 
 
 3. duration qoshish
@@ -47,7 +47,10 @@ service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 
 4. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi
 (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
-keyin filter qoshiladi (is_read va created_at boyicha)
+keyin filter qoshiladi (is_read va created_at boyicha) +
+
+4.1 handler ni bolaklash
+
 
 
 5. botini qoshish
@@ -57,3 +60,5 @@ keyin filter qoshiladi (is_read va created_at boyicha)
 6. serviceni bosh vaqtlarini oladigan api kerak
 api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
 
+
+7. barcha apilarga filter, search, pagination qoshish

@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import datetime, timedelta, date as date_cls,time as time_cls
+from datetime import datetime, timedelta, date as date_cls, time as time_cls
 
 import django
 from aiogram import Dispatcher, F
@@ -115,7 +115,6 @@ async def process_categories(message: Message):
     await message.answer("Categorylar", reply_markup=make_inline_btn_azim(buttons, [3]))
 
 
-
 @online_booking.callback_query()
 async def process_category_callback(callback: CallbackQuery):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
@@ -153,7 +152,6 @@ async def process_category_callback(callback: CallbackQuery):
         service = await sync_to_async(lambda: Service.objects.get(id=service_id))()
 
         today = timezone.localdate()
-
 
         days = [today + timedelta(days=i) for i in range(14)]
         print(days)
@@ -197,7 +195,7 @@ async def process_category_callback(callback: CallbackQuery):
             return
 
         markup = make_inline_btn_azim(free_slots, sizes=[2],
-            data_list=[f"slot_{service.id}_{target_date}_{s.split()[0]}" for s in free_slots])
+                                      data_list=[f"slot_{service.id}_{target_date}_{s.split()[0]}" for s in free_slots])
 
         await callback.message.edit_text(
             f"📅 Доступные слоты на {target_date.strftime('%d-%m-%Y')}:",
