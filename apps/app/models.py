@@ -74,7 +74,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
         constraints = [
             CheckConstraint(
                 check=RawSQL(
-                    "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 60 = 0 AND duration > INTERVAL '0 seconds'",
+                    "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 15 = 0 AND duration > INTERVAL '0 seconds'",
                     [],
                     output_field=BooleanField()
                 ),

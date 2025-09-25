@@ -48,6 +48,12 @@ class ServiceModelSerializer(ModelSerializer):
         fields = ("id", "name","image", 'owner', "price", "description", "address", "capacity", "category", "schedules")
         read_only_fields = 'id',
 
+    def validate_duration(self, value):
+        minutes = value.total_seconds() / 60
+        if minutes <= 0 or minutes % 15 != 0:
+            raise ValidationError("Duration must be a positive multiple of 15 minutes.")
+        return value
+
     def create(self, validated_data):
         schedules_data = validated_data.pop("schedules", [])
         service = Service.objects.create(**validated_data)

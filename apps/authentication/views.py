@@ -105,8 +105,7 @@ class RoleChangeCrateAPIView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RoleChangeModelSerializer
 
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
+
 
 
 @extend_schema(tags=['Auth'], responses={200: MyRequestsModelSerializer})

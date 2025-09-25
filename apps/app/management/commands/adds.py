@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 name=self.faker.company(),
                 address=self.faker.address(),
                 capacity=self.faker.random.randint(1, 20),
-                duration=timedelta(minutes=random.choice([60, 120, 180, 240])),
+                duration=timedelta(minutes=random.choice([15, 30, 60, 120])),
                 price=self.faker.random.randint(10000, 100000),
                 description=self.faker.text(),
             )
