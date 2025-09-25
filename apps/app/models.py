@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, CharField,
                               DurationField, FloatField, ForeignKey, Index,
                               IntegerField, Model, PositiveIntegerField, Q,
-                              TextChoices, TextField, TimeField)
+                              TextChoices, TextField, TimeField, ImageField)
 from django.db.models.fields import DateField
 from django.utils import timezone
 
@@ -63,6 +63,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
     duration = DurationField(default=timedelta(minutes=60))  # TODO validator qoshish kk 60 ga karralimi? + pg check
     price = PositiveIntegerField()
     description = TextField(blank=True)
+    image = ImageField(upload_to="services/%Y/%m/%d/", null=True, blank=True)
 
     class Meta:
         verbose_name = 'Service'

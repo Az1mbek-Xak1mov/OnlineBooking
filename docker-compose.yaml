@@ -5,6 +5,8 @@ services:
       - .env
     ports:
       - "8000:8000"
+    volumes:
+      - ./media:/app/media
     command: uv run python3 manage.py runserver 0.0.0.0:8000
     depends_on:
       - postgres_service
@@ -12,11 +14,14 @@ services:
   postgres_service:
     image: postgres:alpine
     environment:
+      - POSTGRES_DB=onlinebooking
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1
     ports:
-      - "5434:5432"
+      - "5432:5432"
 
   redis_service:
     image: redis:alpine
     ports:
-      - "6380:6379"
+      - "6379:6379"
+

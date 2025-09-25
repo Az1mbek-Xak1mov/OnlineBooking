@@ -1,3 +1,5 @@
+from rest_framework.parsers import MultiPartParser, FormParser
+
 from app.models import Booking, Service, ServiceCategory
 from app.permissions import IsProvider
 from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
@@ -17,6 +19,8 @@ class ServiceListCreateAPIView(ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
+    parser_classes = (MultiPartParser, FormParser)   
+
 
 
 @extend_schema(tags=['Booking'])
