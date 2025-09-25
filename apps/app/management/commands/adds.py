@@ -1,12 +1,13 @@
 import random
 from datetime import time, timedelta
 
-from app.models import (WEEKDAY_NAME_TO_INDEX, Booking, Service,
-                        ServiceCategory, ServiceSchedule, WeekdayChoices)
-from authentication.models import RoleChange, User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from faker import Faker
+
+from app.models import (WEEKDAY_NAME_TO_INDEX, Booking, Service,
+                        ServiceCategory, ServiceSchedule, WeekdayChoices)
+from authentication.models import RoleChange, User
 
 
 class Command(BaseCommand):
@@ -22,24 +23,23 @@ class Command(BaseCommand):
         parser.add_argument("--all", action="store_true")
 
     def _generate_users(self, number: int = 10):
-        users = []
         for _ in range(number):
             while True:
                 phone_number = "998" + "".join([str(random.randint(0, 9)) for _ in range(9)])
+                # TODO ''.join(re.findall('\d', faker.phone_number())
                 if not User.objects.filter(phone_number=phone_number).exists():
                     break
 
-            u = User.objects.create_user(
+            User.objects.create_user(
                 phone_number=phone_number,
                 first_name=self.faker.first_name(),
                 last_name=self.faker.last_name(),
-                type=random.choice([User.Type.CUSTOMER, User.Type.PROVIDER]),
+                type=random.choice(User.Type.choices),
                 telegram_id=random.randint(10000000, 99999999),
                 password="1",
             )
-            users.append(u)
 
-        self.stdout.write(self.style.SUCCESS(f"Users generated - {len(users)}"))
+        self.stdout.write(self.style.SUCCESS(f"Users generated - {number}"))
 
     def _generate_categories(self, number: int = 5):
         categories = []
@@ -50,25 +50,25 @@ class Command(BaseCommand):
 
     def _generate_services(self, number: int = 20):
         providers = list(User.objects.filter(type=User.Type.PROVIDER))
-        categories = list(ServiceCategory.objects.all())
+        # categories = list(ServiceCategory.objects.all())
+        # TODO
+        category_id = ServiceCategory.objects.order_by('?').values_list('id', flat=True).first()
 
-        if not providers or not categories:
+        if not providers or not category_id:
             self.stdout.write(self.style.ERROR("No providers or categories"))
             return
 
-        services = []
         for _ in range(number):
-            s = Service.objects.create(
+            service = Service.objects.create(
                 owner=random.choice(providers),
-                category=random.choice(categories),
+                category_id=category_id,
                 name=self.faker.company(),
                 address=self.faker.address(),
-                capacity=random.randint(1, 20),
+                capacity=self.faker.random.randint(1, 20),
                 duration=timedelta(minutes=random.choice([30, 60, 90, 120])),
-                price=random.randint(10000, 100000),
+                price=self.faker.random.randint(10000, 100000),
                 description=self.faker.text(),
             )
-            services.append(s)
 
             # schedules
             for day, _ in WeekdayChoices.choices:
@@ -76,31 +76,31 @@ class Command(BaseCommand):
                     start = time(hour=random.randint(8, 18), minute=0)
                     end = (timezone.datetime.combine(timezone.now(), start) + timedelta(hours=2)).time()
                     ServiceSchedule.objects.create(
-                        service=s,
+                        service=service,
                         weekday=day,
                         start_time=start,
                         end_time=end,
                     )
 
-        self.stdout.write(self.style.SUCCESS(f"Services generated - {len(services)}"))
+        self.stdout.write(self.style.SUCCESS(f"Services generated - {number}"))
 
     def _generate_bookings(self, number: int = 30):
         customers = list(User.objects.filter(type=User.Type.CUSTOMER))
         services = list(Service.objects.all())
+        # TODO optimize
 
         if not customers or not services:
             self.stdout.write(self.style.ERROR("No customers or services"))
             return
 
-        bookings = []
         for _ in range(number):
             service = random.choice(services)
             user = random.choice(customers)
-            weekday = random.choice(list(WEEKDAY_NAME_TO_INDEX.keys()))
+            weekday = random.choice(list(WEEKDAY_NAME_TO_INDEX.keys()))  # TODO change textchoices
             date = timezone.localdate() + timedelta(days=random.randint(0, 14))
             start_time = time(hour=random.randint(9, 17), minute=0)
             end_time = (timezone.datetime.combine(timezone.now(), start_time) + timedelta(hours=1)).time()
-            b = Booking.objects.create(
+            Booking.objects.create(
                 service=service,
                 weekday=weekday,
                 user=user,
@@ -109,12 +109,11 @@ class Command(BaseCommand):
                 end_time=end_time,
                 seats=random.randint(1, min(5, service.capacity)),
             )
-            bookings.append(b)
 
-        self.stdout.write(self.style.SUCCESS(f"Bookings generated - {len(bookings)}"))
+        self.stdout.write(self.style.SUCCESS(f"Bookings generated - {number}"))
 
     def _generate_rolechanges(self, number: int = 10):  # 🔹 новый генератор
-        customers = list(User.objects.filter(type=User.Type.CUSTOMER))
+        customers = list(User.objects.filter(type=User.Type.CUSTOMER))  # TODO
         if not customers:
             self.stdout.write(self.style.ERROR("No customers for role change requests"))
             return
@@ -131,21 +130,17 @@ class Command(BaseCommand):
                 is_read=is_read,
                 is_accepted=is_accepted,
             )
-            role_changes.append(rc)
+            role_changes.append(rc)  # TODO
 
-        self.stdout.write(self.style.SUCCESS(f"RoleChange requests generated - {len(role_changes)}"))
+        self.stdout.write(self.style.SUCCESS(f"RoleChange requests generated - {number}"))
 
     def handle(self, *args, **kwargs):
         self.faker = Faker("uz_UZ")
 
         if kwargs.get("all"):
-            generated_item_names = self.model_list
-        else:
-            kwargs = {key: value for key, value in kwargs.items() if value is not None}
-            generated_item_names = set(kwargs).intersection(self.model_list)
-
-        for _name in generated_item_names:
-            if kwargs.get(_name) is None:
+            for _name in self.model_list:
                 getattr(self, f"_generate_{_name}")()
-            else:
-                getattr(self, f"_generate_{_name}")(kwargs[_name])
+        else:
+            for _name in set(kwargs).intersection(self.model_list):
+                count = kwargs.get(_name)
+                getattr(self, f"_generate_{_name}")(count)

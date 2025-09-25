@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from bot.const import ENTER_
@@ -20,6 +20,7 @@ def entr_button():
     rows = [1]
     return make_reply(buttons, rows)
 
+
 def main_menu_buttons():
     buttons = [
         KeyboardButton(text="Category"),
@@ -29,3 +30,13 @@ def main_menu_buttons():
     ]
     rows = [2, 2]
     return make_reply(buttons, rows)
+
+def phone_request_button():
+    kb = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📞 Raqamni yuborish", request_contact=True)]
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+    return kb
