@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from authentication.models import RoleChange, User
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CharField, UUIDField
+from rest_framework.fields import CharField, CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -108,7 +108,8 @@ class UserSerializer(ModelSerializer):
 
 
 class RoleChangeModelSerializer(ModelSerializer):
-    user = UUIDField(read_only=True, source="user.id")
+    user = HiddenField(default=CurrentUserDefault())
+    message = CharField(write_only=True)
 
     class Meta:
         model = RoleChange

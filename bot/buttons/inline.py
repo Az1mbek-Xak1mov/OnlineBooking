@@ -3,8 +3,6 @@ from math import ceil
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-
-
 def make_inline_btn(btns: list, size: list, repeat=False):
     rkb = InlineKeyboardBuilder()
     rkb.add(*btns)
@@ -16,6 +14,7 @@ def make_inline_btn(btns: list, size: list, repeat=False):
 
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 
 def make_inline_btn_azim(btns, sizes, data_list=None):
     builder = InlineKeyboardBuilder()
@@ -57,6 +56,7 @@ def build_services_markup(services, category_id, page=0):
 
 from datetime import datetime, timedelta
 
+
 def get_free_slots(service, target_date):
     weekday_name = target_date.strftime("%A").lower()
 
@@ -78,6 +78,7 @@ def get_free_slots(service, target_date):
             slot_start = current.time()
             slot_end = (current + duration).time()
             from app.models import Booking
+
             # Проверка занятости
             exists = Booking.objects.filter(
                 service=service,

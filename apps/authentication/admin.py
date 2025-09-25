@@ -88,19 +88,10 @@ class RoleChangeAdmin(admin.ModelAdmin):
         obj = super().get_object(request, object_id, from_field)
         if obj and not obj.is_read:
             obj.is_read = True
-            obj.is_accepted = True
-            obj.save(update_fields=["is_read", "is_accepted"])
-
-            if obj.user.type != User.Type.PROVIDER:
-                obj.user.type = User.Type.PROVIDER
-                obj.user.save(update_fields=["type"])
+            obj.save(update_fields=["is_read"])
         return obj
 
     def save_model(self, request, obj, form, change):
-        if not obj.is_read:
-            obj.is_read = True
-        if not obj.is_accepted:
-            obj.is_accepted = True
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Mark selected requests as read")

@@ -6,14 +6,22 @@ from authentication.serializers import (CustomTokenObtainPairSerializer,
                                         UserRegistrationSerializer,
                                         UserSerializer, VerifyOtpSerializer)
 from authentication.utils import OtpService, generate_code
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
+
+
+class CustomLimitOffsetPagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 100
 
 
 @extend_schema(tags=['Auth'])
@@ -97,8 +105,8 @@ class RoleChangeCrateAPIView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RoleChangeModelSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
 
 
 @extend_schema(tags=['Auth'], responses={200: MyRequestsModelSerializer})
@@ -106,6 +114,11 @@ class MyRequestsListAPIView(ListAPIView):
     queryset = RoleChange.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = MyRequestsModelSerializer
+
+    pagination_class = CustomLimitOffsetPagination
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_fields = 'created_at',
+    search_fields = 'message',
 
     def get_queryset(self):
         qs = super().get_queryset()

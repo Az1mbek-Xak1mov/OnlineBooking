@@ -45,8 +45,8 @@ class User(AbstractUser, UUIDBaseModel):
 
 
 class RoleChange(UUIDBaseModel, CreatedBaseModel):
-    user = ForeignKey('authentication.User', CASCADE, related_name='role_change_requests')
-    message = TextField()
+    user = ForeignKey('authentication.User', CASCADE, related_name='role_change_requests', editable=False)
+    message = TextField(editable=False)
     is_read = BooleanField(default=False, editable=False)
     is_accepted = BooleanField(null=True, blank=True,
                                help_text='If you accept, the users role will be changed from Customer to Provider')

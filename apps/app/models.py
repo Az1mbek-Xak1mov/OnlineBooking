@@ -2,16 +2,18 @@ from datetime import date as date_cls
 from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
-from django.db.models import (CASCADE, SET_NULL, CharField,
-                              DurationField, FloatField, ForeignKey, Index,
-                              IntegerField, Model, PositiveIntegerField, Q,
-                              TextChoices, TextField, TimeField, ImageField)
-from django.db.models.fields import DateField
+from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
+                              DurationField, FloatField, ForeignKey,
+                              ImageField, Index)
+from django.db.models.expressions import RawSQL
+from django.db.models import (BooleanField, DateField, IntegerField,
+                                     Model, PositiveIntegerField, TextChoices,
+                                     TextField, TimeField)
 from django.utils import timezone
 
 from apps.shared.models import CreatedBaseModel, UUIDBaseModel
 
-WEEKDAY_NAME_TO_INDEX = {
+WEEKDAY_NAME_TO_INDEX = {  # TODO toliq olib tashash
     "monday": 0,
     "tuesday": 1,
     "wednesday": 2,
@@ -69,9 +71,16 @@ class Service(UUIDBaseModel, CreatedBaseModel):
         verbose_name = 'Service'
         verbose_name_plural = 'Services'
 
-        # constraints = [
-        #     CheckConstraint(name='rating_check_constraints')
-        # ]
+        constraints = [
+            CheckConstraint(
+                check=RawSQL(
+                    "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 60 = 0 AND duration > INTERVAL '0 seconds'",
+                    [],
+                    output_field=BooleanField()
+                ),
+                name="duration_multiple_of_60_check"
+            )
+        ]
 
 
 class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
@@ -130,7 +139,7 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
             start = None
         if not self.date and self.weekday:
             name = str(self.weekday).lower()
-            if name not in WEEKDAY_NAME_TO_INDEX:
+            if name not in WeekdayChoices.choices:
                 raise ValueError(f"Unknown weekday value: {self.weekday}")
             target_idx = WEEKDAY_NAME_TO_INDEX[name]
             today = timezone.localdate()
