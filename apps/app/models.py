@@ -2,13 +2,12 @@ from datetime import date as date_cls
 from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
+from django.db.models import (BooleanField, DateField, Model, PositiveIntegerField, TextChoices,
+                              TextField, TimeField)
 from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
                               DurationField, FloatField, ForeignKey,
                               ImageField, Index)
 from django.db.models.expressions import RawSQL
-from django.db.models import (BooleanField, DateField, IntegerField,
-                                     Model, PositiveIntegerField, TextChoices,
-                                     TextField, TimeField)
 from django.utils import timezone
 
 from apps.shared.models import CreatedBaseModel, UUIDBaseModel
@@ -38,13 +37,12 @@ class Park(Model):
     name = CharField(max_length=100)
     lat = FloatField()
     lng = FloatField()
-    size = IntegerField(help_text="Size in acres")
 
     def __str__(self):
         return self.name
 
 
-class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
+class ServiceCategory(CreatedBaseModel):
     name = CharField(max_length=255)
 
     class Meta:
@@ -55,22 +53,21 @@ class ServiceCategory(UUIDBaseModel, CreatedBaseModel):
         return self.name
 
 
-class Service(UUIDBaseModel, CreatedBaseModel):
+class Service(CreatedBaseModel):
     owner = ForeignKey('authentication.User', CASCADE,
                        limit_choices_to={'type': 'provider'}, related_name="services")
     category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
     name = CharField(max_length=255)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
-    duration = DurationField(default=timedelta(minutes=60))  # TODO validator qoshish kk 60 ga karralimi? + pg check
+    duration = DurationField(default=timedelta(minutes=60))
     price = PositiveIntegerField()
     description = TextField(blank=True)
     image = ImageField(upload_to="services/%Y/%m/%d/", null=True, blank=True)
 
-    class Meta:
-        verbose_name = 'Service'
-        verbose_name_plural = 'Services'
+    # TODO is_deleted false larni olish uchun manager|queryset yozish
 
+    class Meta:
         constraints = [
             CheckConstraint(
                 check=RawSQL(
@@ -83,7 +80,7 @@ class Service(UUIDBaseModel, CreatedBaseModel):
         ]
 
 
-class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
+class ServiceSchedule(CreatedBaseModel):
     service = ForeignKey('app.Service', CASCADE, related_name="schedules")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     start_time = TimeField()
@@ -104,7 +101,7 @@ class ServiceSchedule(UUIDBaseModel, CreatedBaseModel):
         return self.start_time.strftime("%H:%M") if self.start_time else None
 
 
-class Booking(UUIDBaseModel, CreatedBaseModel):
+class Booking(CreatedBaseModel):
     service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
@@ -118,8 +115,6 @@ class Booking(UUIDBaseModel, CreatedBaseModel):
             Index(fields=["service", "weekday", "start_time", "end_time"]),
         ]
         ordering = '-created_at',
-        verbose_name = 'Booking'
-        verbose_name_plural = 'Bookings'
 
     def __str__(self):
         return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} {self.end_time} ({self.seats})"

@@ -101,7 +101,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
-class UserSerializer(ModelSerializer):
+class UserModelSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = "id", 'phone_number', 'email', 'telegram_id', 'first_name', 'last_name', 'date_joined'

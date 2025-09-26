@@ -18,32 +18,46 @@
     </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map" style="height:400px;"></div>
 
-<input type="hidden" id="lat" name="lat">
-<input type="hidden" id="lng" name="lng">
+<input type="hidden" id="id_lat" value="41.3275">
+<input type="hidden" id="id_lng" value="69.2813">
+
 
 <script>
-    var map = L.map('map').setView([41.3111, 69.2797], 15); // Tashkent default
+    document.addEventListener('DOMContentLoaded', function () {
+        const latInput = document.getElementById('id_lat');
+        const lngInput = document.getElementById('id_lng');
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+        let lat = parseFloat(latInput?.value);
+        let lng = parseFloat(lngInput?.value);
 
-    let marker;
-
-    map.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-
-        if (marker) {
-            map.removeLayer(marker);
+        if (isNaN(lat) || isNaN(lng)) {
+            lat = 41.3111;
+            lng = 69.2797;
         }
-        marker = L.marker([lat, lng]).addTo(map);
 
-        document.getElementById('lat').value = lat;
-        document.getElementById('lng').value = lng;
+        var map = L.map('map').setView([lat, lng], 15);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        let marker = L.marker([lat, lng]).addTo(map);
+
+        map.on('click', function(e) {
+            const newLat = e.latlng.lat;
+            const newLng = e.latlng.lng;
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([newLat, newLng]).addTo(map);
+
+            latInput.value = newLat;
+            lngInput.value = newLng;
+        });
     });
 </script>
 </body>

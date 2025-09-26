@@ -27,18 +27,76 @@ service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
 (zayavka modeli ochiladi, oqildi oqilmadi[is_read])
 keyin filter qoshiladi (is_read va created_at boyicha) +
 
-
 5. botini qoshish
 (category, talab taklif, oxirgi xizmat, my orders)
 
 5.1 handler ni bolaklash
 
-
 6. serviceni bosh vaqtlarini oladigan api kerak
 api/v1/services/<pk> GET qilganda (shu service malumotlari va bosh vaqtlarini qaytarishi kerak)
+[
+    {
+        "weekday": "monday",
+        "free_time": [
+            {
+                "time": "09:15"
+                "available_capacity": 2
+            },
+            {
+                "time": "09:30"
+                "available_capacity": 5
+            }
+        ]
+    },
+    {
+        "weekday": "tuesday",
+        "free_time": [
+            {
+                "time": "09:00"
+                "available_capacity": 2
+            },
+            {
+                "time": "10:00"
+                "available_capacity": 0
+            }
+        ]
+    }
+]
 
-7. barcha apilarga filter, search, pagination qoshish
+3ta
+08:00 - 20:00
+[08:00, 09:00, 10:00(1), ... 18:00, 19:00, 20:00]
+
+12:00-13:00 2
+
+7. barcha apilarga filter, search, pagination qoshish +
 
 8. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
 
-9. leafletni togrilash (update qilishga kirganda, eski lokatsiyani korsatsin)
+9. leafletni togrilash (update qilishga kirganda, eski lokatsiyani korsatsin) +
+
+10. /api/v1/booking duration qoshish kerak
+
+11. service ni ochirish (soft delete) is_deleted=True
+
+
+
+
+Kiyim do'kon
+https://www.figma.com/design/QIo4vUncOIn0uzCqYqWGYe/Online-Shopping-Website-Design---eCommerce-Store-Website---UI-Kit-(Community)?node-id=0-1&p=f&t=azeiDvWWQmJMeZeB-0
+
+News
+https://www.figma.com/design/NJjwtbj98TLF8h7RIKE1B9/Free-News-%26-Magazine-Figma-Template-%2F-All-pages-(Community)?node-id=17-11&p=f&t=6aG6vz8S9yOBnBnL-0
+
+Kiyim online do'kon
+https://www.figma.com/design/SG4eSdCayTYVEJrLA1mbXq/E-commerce-Website-Template-(Freebie)-(Community)?node-id=0-1&p=f&t=DxTfIsSnw0AqeEAo-0
+
+Online course
+https://www.figma.com/design/gFoTExaXHl19o8PoNNgGSL/Free-Education-Template-%7C-Online-Courses-%26-E-Learning-%7C-EduPress-(Community)?node-id=0-1&p=f&t=Hcgs4FwaDq8dna18-0
+
+RentCar   https://www.figma.com/design/Ez76V48hoaMl5WEjed4L2t/Car-Rent-Website-Design---Pickolab-Studio-(Community)?node-id=1-5&p=f&t=ccmirZsYeAsMSfRd-0
+
+E-comemrce   https://www.figma.com/design/Hda8bgGevRwr9ZsRA4zBi4/Full-E-Commerce-Website-UI-UX-Design-(Community)?node-id=1-3&p=f&t=ouabHbBn6BasTvk6-0
+
+Dream house
+https://www.figma.com/design/e1dWEEkTgqjqBnkG8LpqSJ/65--Real-Estate-Website-Templates--Community-?node-id=0-1&p=f&t=kFITB1asVT8BrhNN-0

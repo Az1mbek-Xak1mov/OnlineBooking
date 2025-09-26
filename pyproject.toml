@@ -20,6 +20,7 @@ dependencies = [
     "drf-spectacular-sidecar>=2025.8.1",
     "faker>=37.8.0",
     "flake8>=7.3.0",
+    "gunicorn>=23.0.0",
     "isort>=6.0.1",
     "orjson>=3.11.3",
     "pillow>=11.3.0",

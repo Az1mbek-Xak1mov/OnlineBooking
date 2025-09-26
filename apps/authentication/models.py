@@ -44,7 +44,7 @@ class User(AbstractUser, UUIDBaseModel):
         return self.type == self.Type.CUSTOMER
 
 
-class RoleChange(UUIDBaseModel, CreatedBaseModel):
+class RoleChange(CreatedBaseModel):
     user = ForeignKey('authentication.User', CASCADE, related_name='role_change_requests', editable=False)
     message = TextField(editable=False)
     is_read = BooleanField(default=False, editable=False)

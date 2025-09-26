@@ -1,10 +1,12 @@
-from app.models import Booking, Service, ServiceCategory, ServiceSchedule
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CurrentUserDefault, HiddenField
+from rest_framework.fields import CurrentUserDefault, HiddenField, ListField
 from rest_framework.serializers import ModelSerializer, TimeField
+
+from app.models import Booking, Service, ServiceCategory, ServiceSchedule
+from authentication.serializers import UserModelSerializer
 
 
 class ServiceScheduleSerializer(ModelSerializer):
@@ -39,14 +41,20 @@ class ServiceScheduleSerializer(ModelSerializer):
         return data
 
 
+class ServiceCategoryModelSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = '__all__'
+
+
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     schedules = ServiceScheduleSerializer(many=True, required=False)
 
     class Meta:
         model = Service
-        fields = ("id", "name","image", 'owner', "price", "description", "address", "capacity", "category", "schedules")
-        read_only_fields = 'id',
+        fields = ("id", "name", "image", 'owner', "price", "description", "address", "capacity", "category",
+                  "schedules")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -60,6 +68,17 @@ class ServiceModelSerializer(ModelSerializer):
         for sch in schedules_data:
             ServiceSchedule.objects.create(service=service, **sch)
         return service
+
+
+class ServiceRetrieveModelSerializer(ModelSerializer):
+    schedules = ServiceScheduleSerializer(many=True)
+    free_time = ListField(default=list())
+    category = ServiceCategoryModelSerializer()
+    owner = UserModelSerializer()
+
+    class Meta:
+        model = Service
+        fields = "__all__"
 
 
 class BookingModelSerializer(ModelSerializer):
@@ -132,18 +151,6 @@ class BookingModelSerializer(ModelSerializer):
                 seats=seats
             )
         return booking
-
-
-class ServiceRetrieveModelSerializer(ModelSerializer):
-    class Meta:
-        model = Service
-        fields = "__all__"
-
-
-class ServiceCategoryModelSerializer(ModelSerializer):
-    class Meta:
-        model = ServiceCategory
-        fields = '__all__'
 
 
 class BookingHistorySerializer(ModelSerializer):

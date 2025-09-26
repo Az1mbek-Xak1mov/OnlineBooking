@@ -4,7 +4,7 @@ from authentication.serializers import (CustomTokenObtainPairSerializer,
                                         RoleChangeModelSerializer,
                                         UserCreateSerializer,
                                         UserRegistrationSerializer,
-                                        UserSerializer, VerifyOtpSerializer)
+                                        UserModelSerializer, VerifyOtpSerializer)
 from authentication.utils import OtpService, generate_code
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -91,12 +91,12 @@ class CustomTokenRefreshView(TokenRefreshView):
     pass
 
 
-@extend_schema(tags=['Auth'], responses={200: UserSerializer})
+@extend_schema(tags=['Auth'], responses={200: UserModelSerializer})
 class GetMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserModelSerializer(request.user)
         return Response(serializer.data)
 
 
