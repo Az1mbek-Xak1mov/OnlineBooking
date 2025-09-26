@@ -1,7 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from bot.const import ENTER_
+from bot.const import ENTER_, CATEGORY_, FEEDBACK_, LAST_SERVICE_, MY_ORDERS_
 
 
 def make_reply(btns: list, size: list, repeat=False):
@@ -23,10 +23,10 @@ def entr_button():
 
 def main_menu_buttons():
     buttons = [
-        KeyboardButton(text="Category"),
-        KeyboardButton(text="Talab/Taklif"),
-        KeyboardButton(text="Oxirgi xizmat"),
-        KeyboardButton(text="My Orders"),
+        KeyboardButton(text=CATEGORY_),
+        KeyboardButton(text=FEEDBACK_),
+        KeyboardButton(text=LAST_SERVICE_),
+        KeyboardButton(text=MY_ORDERS_),
     ]
     rows = [2, 2]
     return make_reply(buttons, rows)

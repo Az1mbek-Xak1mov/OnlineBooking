@@ -1,1 +1,5 @@
 ENTER_ = "Krish/Entr"
+CATEGORY_="Category"
+FEEDBACK_="Talab/Taklif"
+LAST_SERVICE_="Oxirgi xizmat"
+MY_ORDERS_="My Orders"
