@@ -1,24 +1,19 @@
 import os
 import re
-from datetime import date as date_cls
-from datetime import datetime
-from datetime import time as time_cls
-from datetime import timedelta
+from datetime import datetime, timedelta, date as date_cls,time as time_cls
 
 import django
 from aiogram import Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, Message
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
-from bot.buttons.inline import (build_services_markup, get_free_slots,
-                                make_inline_btn_azim)
-from bot.buttons.reply import (entr_button, main_menu_buttons,
-                               phone_request_button)
-from bot.const import ENTER_
+from bot.buttons.inline import build_services_markup, make_inline_btn_azim, get_free_slots
+from bot.const import ENTER_, CATEGORY_, LAST_SERVICE_, MY_ORDERS_
+from bot.buttons.reply import entr_button, main_menu_buttons, phone_request_button
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
@@ -38,12 +33,14 @@ class AuthState(StatesGroup):
 async def cmd_start(message: Message):
     await message.answer("Salom! Kirish uchun tugmani bosing:", reply_markup=entr_button())
 
-
 @online_booking.message(F.text == ENTER_)
 async def process_entry(message: Message, state: FSMContext):
     user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
     if user:
-        await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
+        await message.answer(
+            "✅ Kirish muvaffaqiyatli! Xush kelibsiz.",
+            reply_markup=main_menu_buttons()
+        )
     else:
         await message.answer(
             "📞 Telefon raqamingizni yuboring:",
@@ -51,80 +48,107 @@ async def process_entry(message: Message, state: FSMContext):
         )
         await state.set_state(AuthState.waiting_for_phone)
 
+
 @online_booking.message(AuthState.waiting_for_phone)
 async def process_phone(message: Message, state: FSMContext):
-    if message.contact:
-        phone = message.contact.phone_number
-    else:
-        phone = message.text.strip()
+    phone = message.contact.phone_number if message.contact else message.text.strip()
+    phone = re.sub(r"\D", "", phone)
 
-    if not re.fullmatch(r"^\+?\d{9,15}$", phone):
+    if not re.fullmatch(r"\d{9,15}", phone):
         await message.answer("❌ Notog‘ri telefon raqam. Iltimos, qaytadan yuboring:")
         return
 
-    await state.update_data(phone=phone)
-    # TODO nomerni bazadan izlash kk, agar bor bolsa, tlg_id set qilish, aks holda, password sorab register qilish kk
+    user = await User.objects.filter(phone_number=phone).afirst()
 
-    await message.answer("Endi parolingizni kiriting:", reply_markup=None)
-    await state.set_state(AuthState.waiting_for_password)
-
-
+    if user:
+        user.telegram_id = message.from_user.id
+        await user.asave()
+        await message.answer(
+            "✅ Telefon raqam topildi va akkauntingizga kirildi!",
+            reply_markup=main_menu_buttons()
+        )
+        await state.clear()
+    else:
+        await state.update_data(phone=phone)
+        await message.answer("🔑 Yangi akkaunt uchun parolingizni kiriting:")
+        await state.set_state(AuthState.waiting_for_password)
 
 
 @online_booking.message(AuthState.waiting_for_password)
 async def process_password(message: Message, state: FSMContext):
-    password = message.text
+    password = message.text.strip()
     data = await state.get_data()
     phone = data.get("phone")
 
     user = await User.objects.filter(phone_number=phone).afirst()
-    if not user:
-        await message.answer("❌ Bunday telefon raqami bilan foydalanuvchi topilmadi!")
+    if user:
+        await message.answer("❌ Bu telefon raqami allaqachon ro‘yxatdan o‘tgan.")
         await state.clear()
         return
 
-    is_valid = await sync_to_async(user.check_password)(password)
-    if is_valid:
-        user.telegram_id = message.from_user.id
-        await sync_to_async(user.save)()
-        await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
-    else:
-        await message.answer("❌ Notog‘ri parol!")
+    first_name = message.from_user.first_name or ""
+    last_name = message.from_user.last_name or ""
 
-    await state.clear()
+    user = User(
+        phone_number=phone,
+        telegram_id=message.from_user.id,
+        first_name=first_name,
+        last_name=last_name
+    )
+    await sync_to_async(user.set_password)(password)
+    await user.asave()
 
+    await message.answer(
+        "✅ Akkaunt yaratildi va tizimga kirdingiz! Xush kelibsiz.",
+        reply_markup=main_menu_buttons()
+    )
 
-
-@online_booking.message(F.text == "Oxirgi xizmat")
+@online_booking.message(F.text == LAST_SERVICE_)
 async def last_orders(message: Message):
-    user = await sync_to_async(lambda: User.objects.filter(telegram_id=message.from_user.id).first())()
+    user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
     if not user:
         await message.answer("❌ Siz ro'yxatdan o'tmagansiz!")
         return
 
-    orders = await sync_to_async(lambda: list(Booking.objects.filter(user=user).order_by("-id")[:5]))()
+    orders = await sync_to_async(lambda: list(
+        Booking.objects.filter(user=user)
+        .order_by("-id")
+        .select_related("service")[:5]
+    ))()
+
     if orders:
-        text = "\n".join([f"📌 Order #{o.id} - {o.name}" for o in orders])
+        text = "\n".join([
+            f"📌 Order nom {o.service.name}"
+            for o in orders
+        ])
     else:
         text = "Sizda hali buyurtmalar yo'q."
 
     await message.answer(text, reply_markup=main_menu_buttons())
 
 
-@online_booking.message(F.text == "My Orders")
+@online_booking.message(F.text == MY_ORDERS_)
 async def process_orders(message: Message):
     now_time = timezone.now()
-    orders = await sync_to_async(
-        lambda: list(Booking.objects.filter(user__telegram_id=message.from_user.id, end_time__gt=now_time))
-    )()
+    orders = await sync_to_async(lambda: list(
+        Booking.objects.filter(
+            user__telegram_id=message.from_user.id,
+            end_time__gt=now_time
+        ).select_related("service")
+    ))()
+
     if not orders:
         await message.answer("Sizda faol buyurtmalar yo‘q.")
     else:
-        text = "\n".join([f"Buyurtma #{o.id} tugash vaqti: {o.end_time}" for o in orders])
+        text = "\n".join([
+            f"Buyurtma nom {o.service.name}, tugash vaqti: {o.end_time}"
+            for o in orders
+        ])
         await message.answer(text)
 
 
-@online_booking.message(F.text == "Category")
+
+@online_booking.message(F.text == CATEGORY_)
 async def process_categories(message: Message):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
     buttons = [i.name for i in categories]
@@ -137,7 +161,7 @@ async def process_category_callback(callback: CallbackQuery):
     category_names = [c.name for c in categories]
 
     if callback.data in category_names:
-        category = await sync_to_async(lambda: ServiceCategory.objects.get(name=callback.data))()
+        category = await ServiceCategory.objects.aget(name=callback.data)
         services = await sync_to_async(lambda: list(category.services.all()))()
 
         if not services:
@@ -155,28 +179,25 @@ async def process_category_callback(callback: CallbackQuery):
         payload = callback.data.replace("service_page_", "", 1)
         cat_id, page = payload.rsplit("_", 1)
         page = int(page)
-        services = await sync_to_async(
-            lambda: list(ServiceCategory.objects.get(id=cat_id).services.all())
-        )()
+        category = await ServiceCategory.objects.aget(id=cat_id)
+        services = await category.services.all().aall()
         markup = build_services_markup(services, cat_id, page=page)
         await callback.message.edit_reply_markup(reply_markup=markup)
         await callback.answer()
 
     elif callback.data.startswith("service_"):
-
         service_id = callback.data.replace("service_", "", 1)
-        service = await sync_to_async(lambda: Service.objects.get(id=service_id))()
+        service = await Service.objects.aget(id=service_id)
 
         today = timezone.localdate()
-
         days = [today + timedelta(days=i) for i in range(14)]
-        print(days)
+
         buttons, data_list = [], []
         for d in days:
             weekday_name = d.strftime("%A").lower()
-            exists = await sync_to_async(service.schedules.filter(weekday=weekday_name).exists)()
+            exists = await service.schedules.filter(weekday=weekday_name).aexists()
             if exists:
-                buttons.append(d.strftime("%d-%m %A"))  # Формат: 20-09 Monday
+                buttons.append(d.strftime("%d-%m %A"))
                 data_list.append(f"day_{service.id}_{d.isoformat()}")
                 if len(buttons) == 7:
                     break
@@ -187,7 +208,6 @@ async def process_category_callback(callback: CallbackQuery):
             return
 
         markup = make_inline_btn_azim(buttons, sizes=[2], data_list=data_list)
-
         await callback.message.edit_text(
             f"📌 {service.name}\n"
             f"Manzil: {service.address}\n"
@@ -196,48 +216,44 @@ async def process_category_callback(callback: CallbackQuery):
             f"👉 Quyidagi kunlardan birini tanlang:",
             reply_markup=markup
         )
-
         await callback.answer()
+
     elif callback.data.startswith("day_"):
-
         _, service_id, date_str = callback.data.split("_", 2)
-        service = await sync_to_async(lambda: Service.objects.get(id=service_id))()
+        service = await Service.objects.aget(id=service_id)
         target_date = datetime.fromisoformat(date_str).date()
-
         free_slots = await sync_to_async(get_free_slots)(service, target_date)
-
         if not free_slots:
-            await callback.message.edit_text("❌ Нет свободных времён в этот день")
+            await callback.message.edit_text("❌ Bu kunda bo'sh vaqt yo'q.")
             return
 
-        markup = make_inline_btn_azim(free_slots, sizes=[2],
-                                      data_list=[f"slot_{service.id}_{target_date}_{s.split()[0]}" for s in free_slots])
+        markup = make_inline_btn_azim(
+            free_slots, sizes=[2],
+            data_list=[f"slot_{service.id}_{target_date}_{s.split()[0]}" for s in free_slots]
+        )
 
         await callback.message.edit_text(
-            f"📅 Доступные слоты на {target_date.strftime('%d-%m-%Y')}:",
+            f"📅 Mavjud slotlar yoqilgan {target_date.strftime('%d-%m-%Y')}:",
             reply_markup=markup
         )
+
     elif callback.data.startswith("slot_"):
-        # Распаковка 4 частей, без end_time
         _, service_id, date_str, start_str = callback.data.split("_")
-        service = await sync_to_async(lambda: Service.objects.get(id=service_id))()
+        service = await Service.objects.aget(id=service_id)
 
         target_date = date_cls.fromisoformat(date_str)
         start_time = time_cls.fromisoformat(start_str)
-
-        # Вычисляем end_time через длительность услуги
         end_time = (datetime.combine(target_date, start_time) + service.duration).time()
 
-        user = await sync_to_async(lambda: User.objects.get(telegram_id=callback.from_user.id))()
+        user = await User.objects.aget(telegram_id=callback.from_user.id)
 
-        exists = await sync_to_async(
-            lambda: Booking.objects.filter(
-                service=service, date=target_date,
-                start_time=start_time, end_time=end_time
-            ).exists()
-        )()
+        exists = await Booking.objects.filter(
+            service=service, date=target_date,
+            start_time=start_time, end_time=end_time
+        ).aexists()
+
         if exists:
-            await callback.message.edit_text("❌ К сожалению, слот только что заняли")
+            await callback.message.edit_text("❌ Afsuski, slot endigina olingan.")
             return
 
         booking = Booking(
@@ -247,10 +263,12 @@ async def process_category_callback(callback: CallbackQuery):
             start_time=start_time,
             end_time=end_time
         )
-        await sync_to_async(booking.save)()
+        await booking.asave()
 
         await callback.message.edit_text(
             f"✅ Вы забронировали {service.name}\n"
             f"📅 {target_date.strftime('%d-%m-%Y')}\n"
             f"🕒 {start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
         )
+
+

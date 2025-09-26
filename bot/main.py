@@ -14,6 +14,7 @@ TOKEN = getenv('BOT_TOKEN')
 
 
 async def main() -> None:
+
     bot = Bot(token=TOKEN)
     await online_booking.start_polling(bot)
 

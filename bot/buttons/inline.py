@@ -1,7 +1,5 @@
 from math import ceil
 
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 
 def make_inline_btn(btns: list, size: list, repeat=False):
     rkb = InlineKeyboardBuilder()
@@ -60,26 +58,22 @@ from datetime import datetime, timedelta
 def get_free_slots(service, target_date):
     weekday_name = target_date.strftime("%A").lower()
 
-    # Берём расписание для этого дня
     schedules = service.schedules.filter(weekday=weekday_name)
     if not schedules.exists():
         return []
 
-    duration = service.duration  # timedelta, например 1 час
+    duration = service.duration
     free_slots = []
 
     for sch in schedules:
         start_dt = datetime.combine(target_date, sch.start_time)
         end_dt = datetime.combine(target_date, sch.end_time)
-
-        # Двигаемся кусками по duration
         current = start_dt
         while current + duration <= end_dt:
             slot_start = current.time()
             slot_end = (current + duration).time()
             from app.models import Booking
 
-            # Проверка занятости
             exists = Booking.objects.filter(
                 service=service,
                 date=target_date,
