@@ -18,9 +18,9 @@ TASK
 
 
 3. duration qoshish
-api/v1/bookings (15, 30, 1h)
+api/v1/bookings (30, 1h)
 
-service yaratayotganda (ozini oraliq vaqtini belgilasin, 15, 30, 60)
+service yaratayotganda (ozini oraliq vaqtini belgilasin, 30, 60)
 
 
 4. 1ta api qilish kk, customer providerga otish uchun zayavka tashaydi

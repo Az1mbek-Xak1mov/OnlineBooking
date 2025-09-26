@@ -1,12 +1,13 @@
 from datetime import date as date_cls
 from datetime import datetime, timedelta
 
+from app.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
-from django.db.models import (BooleanField, DateField, Model, PositiveIntegerField, TextChoices,
-                              TextField, TimeField)
-from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
-                              DurationField, FloatField, ForeignKey,
-                              ImageField, Index)
+from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
+                              CheckConstraint, DateField, DurationField,
+                              FloatField, ForeignKey, ImageField, Index, Model,
+                              PositiveIntegerField, TextChoices, TextField,
+                              TimeField)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
@@ -64,6 +65,9 @@ class Service(CreatedBaseModel):
     price = PositiveIntegerField()
     description = TextField(blank=True)
     image = ImageField(upload_to="services/%Y/%m/%d/", null=True, blank=True)
+    is_deleted = BooleanField(default=False)
+
+    objects = ServiceManager.from_queryset(ServiceQuerySet)()
 
     # TODO is_deleted false larni olish uchun manager|queryset yozish
 
@@ -71,7 +75,7 @@ class Service(CreatedBaseModel):
         constraints = [
             CheckConstraint(
                 check=RawSQL(
-                    "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 15 = 0 AND duration > INTERVAL '0 seconds'",
+                    "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 30 = 0 AND duration > INTERVAL '0 seconds'",
                     [],
                     output_field=BooleanField()
                 ),

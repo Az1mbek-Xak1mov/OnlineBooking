@@ -1,35 +1,9 @@
+from authentication.models import (AdminUserProxyUser, CustomerProxyUser,
+                                   ModeratorProxyUser, ProviderProxyUser,
+                                   RoleChange, User)
 from django.contrib import admin
+from django.contrib.auth.hashers import make_password
 from django.forms import HiddenInput
-
-from .models import RoleChange, User
-
-# TODO proxy larni modelga otkazish (CustomerProxyUser)
-class Customer(User):
-    class Meta:
-        proxy = True
-        verbose_name = "Customer"
-        verbose_name_plural = "Customers"
-
-
-class Provider(User):
-    class Meta:
-        proxy = True
-        verbose_name = "Provider"
-        verbose_name_plural = "Providers"
-
-
-class AdminUser(User):
-    class Meta:
-        proxy = True
-        verbose_name = "Admin"
-        verbose_name_plural = "Admins"
-
-
-class Moderator(User):
-    class Meta:
-        proxy = True
-        verbose_name = "Moderator"
-        verbose_name_plural = "Moderators"
 
 
 class UserModelAdminMixin(admin.ModelAdmin):
@@ -46,6 +20,11 @@ class UserModelAdminMixin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if self._type is not None:
             obj.type = self._type
+
+        raw_password = getattr(obj, "password", None)
+        if raw_password and not raw_password.startswith("pbkdf2_"):
+            obj.password = make_password(raw_password)
+
         super().save_model(request, obj, form, change)
 
     def get_form(self, request, obj=None, **kwargs):
@@ -56,24 +35,24 @@ class UserModelAdminMixin(admin.ModelAdmin):
         return form
 
 
-@admin.register(Customer)
+@admin.register(CustomerProxyUser)
 class CustomerAdmin(UserModelAdminMixin):
     _type = User.Type.CUSTOMER
 
 
-@admin.register(Provider)
+@admin.register(ProviderProxyUser)
 class ProviderAdmin(UserModelAdminMixin):
     _type = User.Type.PROVIDER
 
 
-@admin.register(AdminUser)
+@admin.register(AdminUserProxyUser)
 class AdminUserModelAdmin(UserModelAdminMixin):
-    _type = AdminUser.Type.ADMIN
+    _type = User.Type.ADMIN
 
 
-@admin.register(Moderator)
+@admin.register(ModeratorProxyUser)
 class ModeratorAdmin(UserModelAdminMixin):
-    _type = AdminUser.Type.MODERATOR
+    _type = User.Type.MODERATOR
 
 
 @admin.register(RoleChange)

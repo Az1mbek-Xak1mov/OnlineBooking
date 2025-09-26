@@ -3,25 +3,21 @@ from authentication.serializers import (CustomTokenObtainPairSerializer,
                                         MyRequestsModelSerializer,
                                         RoleChangeModelSerializer,
                                         UserCreateSerializer,
+                                        UserModelSerializer,
                                         UserRegistrationSerializer,
-                                        UserModelSerializer, VerifyOtpSerializer)
+                                        VerifyOtpSerializer)
 from authentication.utils import OtpService, generate_code
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import CreateAPIView, ListAPIView
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
-
-
-class CustomLimitOffsetPagination(LimitOffsetPagination):
-    default_limit = 10
-    max_limit = 100
+from shared.paginations import CustomLimitOffsetPagination
 
 
 @extend_schema(tags=['Auth'])

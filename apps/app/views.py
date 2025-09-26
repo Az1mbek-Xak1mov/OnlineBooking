@@ -1,12 +1,3 @@
-from django.shortcuts import render  # noqa
-from drf_spectacular.utils import extend_schema
-from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     ListCreateAPIView, RetrieveAPIView)
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-
 from app.mixins import FilterSearchMixin
 from app.models import Booking, Service, ServiceCategory
 from app.permissions import IsProvider
@@ -14,22 +5,28 @@ from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
                              ServiceCategoryModelSerializer,
                              ServiceModelSerializer,
                              ServiceRetrieveModelSerializer)
+from drf_spectacular.utils import extend_schema
+from rest_framework.generics import (CreateAPIView, ListAPIView,
+                                     ListCreateAPIView, RetrieveAPIView)
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from shared.filters import ServiceFilter
+from shared.paginations import CustomLimitOffsetPagination
 
-
-class MyLimitOffsetPagination(LimitOffsetPagination):
-    default_limit = 10
-    max_limit = 100
-    # TODO pagination ga otkazish kk
+# TODO pagination ga otkazish kk
 
 
 @extend_schema(tags=['Service'])
 class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
+    authentication_classes = ()
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
     parser_classes = (MultiPartParser, FormParser)
 
-    pagination_class = MyLimitOffsetPagination
+    pagination_class = CustomLimitOffsetPagination
+    filterset_class = ServiceFilter
     filterset_fields = 'created_at',  # category boyicha filter, min_price, max_price
     search_fields = 'category__name', 'name', 'address', 'capacity', 'price', 'description'
 
@@ -52,9 +49,9 @@ class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
     serializer_class = ServiceCategoryModelSerializer
     queryset = ServiceCategory.objects.all()
     authentication_classes = ()
-    pagination_class = MyLimitOffsetPagination
 
-    filterset_fields = 'created_at',
+    pagination_class = CustomLimitOffsetPagination
+    filterset_fields = 'category__name', 'name', 'address', 'capacity', 'price', 'description',
     search_fields = 'name',
 
 
@@ -64,7 +61,7 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     queryset = Booking.objects.all()
     permission_classes = [IsAuthenticated]
 
-    pagination_class = MyLimitOffsetPagination
+    pagination_class = CustomLimitOffsetPagination
     filterset_fields = 'created_at',
     search_fields = 'service__name', 'weekday', 'start_time', 'seats'
 

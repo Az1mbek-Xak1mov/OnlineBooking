@@ -27,7 +27,6 @@ class Command(BaseCommand):
         for _ in range(number):
             while True:
                 phone_number = ''.join(re.findall(r"\d", self.faker.phone_number()))
-                # TODO ''.join(re.findall('\d', faker.phone_number())
                 if not User.objects.filter(phone_number=phone_number).exists():
                     break
 
@@ -48,7 +47,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Categories generated - {number}"))
 
     def _generate_services(self, number: int = 5):
-        # TODO
 
         providers_ids = User.objects.filter(type=User.Type.PROVIDER).values_list('id', flat=True)
         categories_id = ServiceCategory.objects.values_list('id', flat=True)
@@ -58,15 +56,17 @@ class Command(BaseCommand):
             return
 
         for _ in range(number):
+            is_deleted = self.faker.random.choice([True, False])
             service = Service.objects.create(
                 owner_id=self.faker.random.choice(providers_ids),
                 category_id=self.faker.random.choice(categories_id),
                 name=self.faker.company(),
                 address=self.faker.address(),
                 capacity=self.faker.random.randint(1, 20),
-                duration=timedelta(minutes=random.choice([15, 30, 60, 120])),
+                duration=timedelta(minutes=self.faker.random.choice([30, 60, 120])),
                 price=self.faker.random.randint(10000, 100000),
                 description=self.faker.text(),
+                is_deleted=is_deleted
             )
             # schedules
             for day, _ in WeekdayChoices.choices:
@@ -85,7 +85,6 @@ class Command(BaseCommand):
     def _generate_bookings(self, number: int = 5):
         customers_id = User.objects.filter(type=User.Type.CUSTOMER).values_list('id', flat=True)
         services = list(Service.objects.all())
-        # TODO optimize
 
         if not customers_id or not services:
             self.stdout.write(self.style.ERROR("No customers or services"))
@@ -94,7 +93,7 @@ class Command(BaseCommand):
         for _ in range(number):
             service = self.faker.random.choice(services)
             user = self.faker.random.choice(customers_id)
-            weekday = self.faker.random.choice(WeekdayChoices.values)  # TODO change textchoices
+            weekday = self.faker.random.choice(WeekdayChoices.values)
             date = timezone.localdate() + timedelta(days=random.randint(0, 14))
             start_time = time(hour=random.randint(9, 17), minute=0)
             end_time = (timezone.datetime.combine(timezone.now(), start_time) + timedelta(hours=1)).time()
@@ -128,7 +127,6 @@ class Command(BaseCommand):
                 is_read=is_read,
                 is_accepted=is_accepted,
             )
-            # TODO
 
         self.stdout.write(self.style.SUCCESS(f"RoleChange requests generated - {number}"))
 
