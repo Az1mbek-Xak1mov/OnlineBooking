@@ -3,7 +3,7 @@ from django.forms import HiddenInput
 
 from .models import RoleChange, User
 
-
+# TODO proxy larni modelga otkazish (CustomerProxyUser)
 class Customer(User):
     class Meta:
         proxy = True

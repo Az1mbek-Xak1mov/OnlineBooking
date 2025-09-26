@@ -163,31 +163,6 @@ REDIS_DB = os.getenv('REDIS_DB')
 
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-MAP_WIDGETS = {
-    "Leaflet": {
-        "PointField": {
-            "mapOptions": {"zoom": 12, "scrollWheelZoom": False},
-            "tileLayer": {
-                "urlTemplate": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "options": {"maxZoom": 20},
-            },
-            "markerFitZoom": 14,
-            "showZoomNavigation": True,
-        }
-    }
-}
-
-LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (40.0, -3.7),  # default map center (lat, lon)
-    'DEFAULT_ZOOM': 6,
-    'MIN_ZOOM': 3,
-    'MAX_ZOOM': 18,
-    'SCALE': 'both',  # show scale bar
-    'ATTRIBUTION_PREFIX': 'Company Map',
-}
-
-
-
 # Hash Password : Argon2
 
 PASSWORD_HASHERS = [
