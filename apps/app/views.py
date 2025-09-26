@@ -7,7 +7,7 @@ from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
                              ServiceRetrieveModelSerializer)
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     ListCreateAPIView, RetrieveAPIView)
+                                     ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView)
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -21,14 +21,16 @@ from shared.paginations import CustomLimitOffsetPagination
 class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
-    authentication_classes = ()
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
-    parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
 
     pagination_class = CustomLimitOffsetPagination
     filterset_class = ServiceFilter
-    filterset_fields = 'created_at',  # category boyicha filter, min_price, max_price
-    search_fields = 'category__name', 'name', 'address', 'capacity', 'price', 'description'
+    search_fields = 'category', 'name', 'address', 'capacity', 'price', 'description'
+
+    def get_queryset(self):
+        print(self.request.user)
+        return super().get_queryset()
 
 
 @extend_schema(tags=['Booking'])
@@ -51,7 +53,7 @@ class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
     authentication_classes = ()
 
     pagination_class = CustomLimitOffsetPagination
-    filterset_fields = 'category__name', 'name', 'address', 'capacity', 'price', 'description',
+    filterset_fields = 'name',
     search_fields = 'name',
 
 
