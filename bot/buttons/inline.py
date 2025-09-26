@@ -68,8 +68,6 @@ def get_free_slots(service, target_date):
     for sch in schedules:
         start_dt = datetime.combine(target_date, sch.start_time)
         end_dt = datetime.combine(target_date, sch.end_time)
-
-        # Двигаемся кусками по duration
         current = start_dt
         while current + duration <= end_dt:
             slot_start = current.time()
