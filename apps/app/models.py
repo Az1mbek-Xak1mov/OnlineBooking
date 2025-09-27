@@ -1,5 +1,4 @@
-from datetime import date as date_cls
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from app.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
@@ -106,56 +105,75 @@ class ServiceSchedule(CreatedBaseModel):
 
 
 class Booking(CreatedBaseModel):
-    service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
-    weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
-    user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
-    date = DateField()
+    service = ForeignKey(
+        "app.Service",
+        on_delete=CASCADE,
+        related_name="bookings"
+    )
+    weekday = CharField(
+        max_length=9,
+        choices=WeekdayChoices.choices
+    )
+    user = ForeignKey(
+        'authentication.User',
+        CASCADE,
+        related_name="bookings"
+    )
+    date = DateField(blank=True, null=True)
     start_time = TimeField()
-    end_time = TimeField()
+    duration = DurationField(blank=True, null=True)
     seats = PositiveIntegerField(default=1)
 
     class Meta:
         indexes = [
-            Index(fields=["service", "weekday", "start_time", "end_time"]),
+            Index(fields=["service", "weekday", "start_time"]),
         ]
-        ordering = '-created_at',
+        ordering = ('-created_at',)
 
     def __str__(self):
-        return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} {self.end_time} ({self.seats})"
-
-    def clean(self):
-        if self.seats > self.service.capacity:
-            raise ValidationError("seats can't exceed service capacity")
+        return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} ({self.seats})"
 
     @property
     def start_time_hm(self):
         return self.start_time.strftime("%H:%M") if self.start_time else None
 
-    def save(self, *args, **kwargs):
-        if self.start_time:
-            start = self.start_time.replace(second=0, microsecond=0)
+    def clean(self):
+        if self.seats > self.service.capacity:
+            raise ValidationError("Seats can't exceed service capacity")
+
+        service_duration = self.service.duration
+
+        if not self.duration:
+            self.duration = service_duration
         else:
-            start = None
+            if self.duration.total_seconds() % service_duration.total_seconds() != 0:
+                raise ValidationError(
+                    f"Booking duration must be a multiple of service duration ({service_duration})."
+                )
+
+        if self.weekday not in WeekdayChoices.values:
+            raise ValidationError(f"Invalid weekday: {self.weekday}")
+
         if not self.date and self.weekday:
             name = str(self.weekday).lower()
-            if name not in WeekdayChoices.choices:
-                raise ValueError(f"Unknown weekday value: {self.weekday}")
-            target_idx = WEEKDAY_NAME_TO_INDEX[name]
+            target_idx = list(WeekdayChoices.values).index(name)
             today = timezone.localdate()
             today_idx = today.weekday()
             delta_days = (target_idx - today_idx) % 7
+
             candidate_date = today + timedelta(days=delta_days)
 
-            if delta_days == 0 and start is not None:
+            if delta_days == 0 and self.start_time is not None:
                 now_time = timezone.localtime().time()
-                if start <= now_time:
-                    candidate_date = candidate_date + timedelta(days=7)
+                if self.start_time <= now_time:
+                    candidate_date += timedelta(days=7)
 
             self.date = candidate_date
 
-        if start:
-            dt_start = datetime.combine(date_cls.min, start)
-            dt_end = dt_start + timedelta(hours=1)
-            self.end_time = dt_end.time().replace(second=0, microsecond=0)
+    def save(self, *args, **kwargs):
+        if self.start_time:
+            self.start_time = self.start_time.replace(second=0, microsecond=0)
+
+        self.clean()
 
         super().save(*args, **kwargs)

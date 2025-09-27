@@ -102,8 +102,6 @@ class RoleChangeCrateAPIView(CreateAPIView):
     serializer_class = RoleChangeModelSerializer
 
 
-
-
 @extend_schema(tags=['Auth'], responses={200: MyRequestsModelSerializer})
 class MyRequestsListAPIView(ListAPIView):
     queryset = RoleChange.objects.all()

@@ -1,0 +1,134 @@
+MODELS
+
+class Booking(CreatedBaseModel):
+    service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
+    weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
+    user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
+    date = DateField()
+    start_time = TimeField()
+    end_time = TimeField()
+    seats = PositiveIntegerField(default=1)
+
+    class Meta:
+        indexes = [
+            Index(fields=["service", "weekday", "start_time", "end_time"]),
+        ]
+        ordering = '-created_at',
+
+    def __str__(self):
+        return f"{self.user} -> {self.service.name} {self.weekday} {self.start_time} {self.end_time} ({self.seats})"
+
+    def clean(self):
+        if self.seats > self.service.capacity:
+            raise ValidationError("seats can't exceed service capacity")
+
+    @property
+    def start_time_hm(self):
+        return self.start_time.strftime("%H:%M") if self.start_time else None
+
+    def save(self, *args, **kwargs):
+        if self.start_time:
+            start = self.start_time.replace(second=0, microsecond=0)
+        else:
+            start = None
+        if not self.date and self.weekday:
+            name = str(self.weekday).lower()
+            if name not in WeekdayChoices.values:
+                raise ValueError(f"Unknown weekday value: {self.weekday}")
+            target_idx = WEEKDAY_NAME_TO_INDEX[name]
+            today = timezone.localdate()
+            today_idx = today.weekday()
+            delta_days = (target_idx - today_idx) % 7
+            candidate_date = today + timedelta(days=delta_days)
+
+            if delta_days == 0 and start is not None:
+                now_time = timezone.localtime().time()
+                if start <= now_time:
+                    candidate_date = candidate_date + timedelta(days=7)
+
+            self.date = candidate_date
+
+        if start:
+            dt_start = datetime.combine(date_cls.min, start)
+            dt_end = dt_start + timedelta(hours=1)
+            self.end_time = dt_end.time().replace(second=0, microsecond=0)
+
+        super().save(*args, **kwargs)
+
+
+
+
+SERIALIZERS
+
+
+
+# class BookingModelSerializer(ModelSerializer):
+#     user = HiddenField(default=CurrentUserDefault())
+#
+#     start_time = TimeField(
+#         format='%H:%M',
+#         input_formats=[
+#             '%H:%M:%S.%fZ',
+#             '%H:%M:%SZ',
+#             '%H:%M:%S',
+#             '%H:%M',
+#         ],
+#         allow_null=False
+#     )
+#
+#     class Meta:
+#         model = Booking
+#         fields = ("id", "service", "user", "weekday", "start_time", "seats")
+#         read_only_fields = ("id", "user")
+#
+#     def validate_seats(self, value):
+#         if value <= 0:
+#             raise ValidationError("seats must be more than 1")
+#         return value
+#
+#     def validate(self, data):
+#         service = data["service"]
+#         seats = data.get("seats", 1)
+#         if seats > service.capacity:
+#             raise ValidationError("seats can't exceed service capacity")
+#
+#         weekday = data["weekday"]
+#         start_time = data["start_time"]
+#
+#         matches = service.schedules.filter(
+#             weekday=weekday,
+#             start_time__lte=start_time,
+#             end_time__gt=start_time
+#         )
+#         if not matches.exists():
+#             raise ValidationError("Service is closed at that time")
+#
+#         return data
+#
+#     def create(self, validated_data):
+#         user = validated_data.pop("user", self.context["request"].user)
+#         service = validated_data["service"]
+#         weekday = validated_data["weekday"]
+#         start_time = validated_data["start_time"]
+#         seats = validated_data.get("seats", 1)
+#
+#         with transaction.atomic():
+#             agg = Booking.objects.select_for_update().filter(
+#                 service=service,
+#                 weekday=weekday,
+#                 start_time__lte=start_time,
+#                 end_time__gte=start_time
+#             ).aggregate(total=Coalesce(Sum("seats"), 0))
+#             booked = agg["total"] or 0
+#
+#             if booked + seats > service.capacity:
+#                 raise ValidationError("Not enough capacity for this time slot")
+#
+#             booking = Booking.objects.create(
+#                 service=service,
+#                 user=user,
+#                 weekday=weekday,
+#                 start_time=start_time,
+#                 seats=seats
+#             )
+#         return booking

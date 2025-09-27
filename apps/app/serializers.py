@@ -1,3 +1,6 @@
+from datetime import date as date_cls
+from datetime import datetime, timedelta
+
 from app.models import Booking, Service, ServiceCategory, ServiceSchedule
 from authentication.serializers import UserModelSerializer
 from django.db import transaction
@@ -52,7 +55,7 @@ class ServiceModelSerializer(ModelSerializer):
 
     class Meta:
         model = Service
-        fields = "id", "name", "image", 'owner', 'duration', "price", "description", "address", "capacity", "category","schedules"
+        fields = "id", "name", "image", 'owner', 'duration', "price", "description", "address", "capacity", "category", "schedules"
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -69,13 +72,17 @@ class ServiceModelSerializer(ModelSerializer):
 
 
 class ServiceRetrieveModelSerializer(ModelSerializer):
-    schedules = ServiceScheduleSerializer(many=True)
-    free_time = ListField(default=list())
     category = ServiceCategoryModelSerializer()
     owner = UserModelSerializer()
 
     class Meta:
         model = Service
+        fields = "__all__"
+
+
+class BookingHistorySerializer(ModelSerializer):
+    class Meta:
+        model = Booking
         fields = "__all__"
 
 
@@ -95,29 +102,33 @@ class BookingModelSerializer(ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ("id", "service", "user", "weekday", "start_time", "seats")
+        fields = ("id", "service", "user", "weekday", "start_time", "duration", "seats")
         read_only_fields = ("id", "user")
 
     def validate_seats(self, value):
         if value <= 0:
-            raise ValidationError("seats must be more than 1")
+            raise ValidationError("Seats must be greater than 0")
         return value
 
     def validate(self, data):
         service = data["service"]
         seats = data.get("seats", 1)
-        if seats > service.capacity:
-            raise ValidationError("seats can't exceed service capacity")
-
         weekday = data["weekday"]
         start_time = data["start_time"]
+        duration = data.get("duration", service.duration)
 
-        matches = service.schedules.filter(
+        if seats > service.capacity:
+            raise ValidationError("Seats can't exceed service capacity")
+
+        end_time = (datetime.combine(date_cls.min, start_time) + duration).time()
+
+        schedule_match = service.schedules.filter(
             weekday=weekday,
             start_time__lte=start_time,
-            end_time__gt=start_time
-        )
-        if not matches.exists():
+            end_time__gte=end_time
+        ).exists()
+
+        if not schedule_match:
             raise ValidationError("Service is closed at that time")
 
         return data
@@ -127,18 +138,23 @@ class BookingModelSerializer(ModelSerializer):
         service = validated_data["service"]
         weekday = validated_data["weekday"]
         start_time = validated_data["start_time"]
+        duration = validated_data.get("duration", service.duration)
         seats = validated_data.get("seats", 1)
 
+        start_dt = datetime.combine(date_cls.min, start_time)
+        end_time = (start_dt + duration).time()
+
         with transaction.atomic():
-            agg = Booking.objects.select_for_update().filter(
+            overlapping = Booking.objects.select_for_update().filter(
                 service=service,
                 weekday=weekday,
-                start_time__lte=start_time,
-                end_time__gte=start_time
-            ).aggregate(total=Coalesce(Sum("seats"), 0))
-            booked = agg["total"] or 0
+                start_time__lt=end_time,
+                duration__gt=timedelta(0)
+            )
 
-            if booked + seats > service.capacity:
+            total_booked = overlapping.aggregate(total=Coalesce(Sum("seats"), 0))["total"] or 0
+
+            if total_booked + seats > service.capacity:
                 raise ValidationError("Not enough capacity for this time slot")
 
             booking = Booking.objects.create(
@@ -146,12 +162,8 @@ class BookingModelSerializer(ModelSerializer):
                 user=user,
                 weekday=weekday,
                 start_time=start_time,
+                duration=duration,
                 seats=seats
             )
+
         return booking
-
-
-class BookingHistorySerializer(ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = "__all__"
