@@ -21,7 +21,6 @@ class LeafletLocationWidget(forms.Widget):
         return context
 
 
-# TODO formga otkazish kk
 class ParkModelForm(forms.ModelForm):
     location_map = forms.Field(
         required=False,

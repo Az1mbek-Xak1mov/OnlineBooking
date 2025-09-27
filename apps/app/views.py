@@ -23,8 +23,6 @@ from shared.filters import ServiceFilter
 from shared.paginations import CustomLimitOffsetPagination
 
 
-# TODO pagination ga otkazish kk
-
 @extend_schema(tags=['Service'])
 class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
     serializer_class = ServiceCategoryModelSerializer

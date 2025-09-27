@@ -1,7 +1,6 @@
 from authentication.models.users import User
 
 
-# TODO proxy larni modelga otkazish (CustomerProxyUser)
 class CustomerProxyUser(User):
     class Meta:
         proxy = True

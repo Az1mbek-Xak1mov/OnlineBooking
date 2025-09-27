@@ -1,5 +1,23 @@
 MODELS
 
+
+
+
+# WEEKDAY_NAME_TO_INDEX = {
+#     "monday": 0,
+#     "tuesday": 1,
+#     "wednesday": 2,
+#     "thursday": 3,
+#     "friday": 4,
+#     "saturday": 5,
+#     "sunday": 6,
+# }
+
+
+
+
+
+
 class Booking(CreatedBaseModel):
     service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)

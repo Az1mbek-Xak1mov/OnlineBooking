@@ -10,17 +10,8 @@ from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
-from apps.shared.models import CreatedBaseModel, UUIDBaseModel
+from apps.shared.models import CreatedBaseModel
 
-WEEKDAY_NAME_TO_INDEX = {  # TODO toliq olib tashash
-    "monday": 0,
-    "tuesday": 1,
-    "wednesday": 2,
-    "thursday": 3,
-    "friday": 4,
-    "saturday": 5,
-    "sunday": 6,
-}
 
 
 class WeekdayChoices(TextChoices):
@@ -68,7 +59,6 @@ class Service(CreatedBaseModel):
 
     objects = ServiceManager.from_queryset(ServiceQuerySet)()
 
-    # TODO is_deleted false larni olish uchun manager|queryset yozish
 
     class Meta:
         constraints = [
@@ -105,20 +95,9 @@ class ServiceSchedule(CreatedBaseModel):
 
 
 class Booking(CreatedBaseModel):
-    service = ForeignKey(
-        "app.Service",
-        on_delete=CASCADE,
-        related_name="bookings"
-    )
-    weekday = CharField(
-        max_length=9,
-        choices=WeekdayChoices.choices
-    )
-    user = ForeignKey(
-        'authentication.User',
-        CASCADE,
-        related_name="bookings"
-    )
+    service = ForeignKey("app.Service",on_delete=CASCADE,related_name="bookings")
+    weekday = CharField(max_length=9,choices=WeekdayChoices.choices)
+    user = ForeignKey('authentication.User',CASCADE,related_name="bookings")
     date = DateField(blank=True, null=True)
     start_time = TimeField()
     duration = DurationField(blank=True, null=True)
