@@ -1,6 +1,9 @@
 import os
 import re
-from datetime import datetime, timedelta, date as date_cls,time as time_cls
+from datetime import date as date_cls
+from datetime import datetime
+from datetime import time as time_cls
+from datetime import timedelta
 
 import django
 from aiogram import Dispatcher, F
@@ -11,9 +14,11 @@ from aiogram.types import CallbackQuery, Message
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
-from bot.buttons.inline import build_services_markup, make_inline_btn_azim, get_free_slots
-from bot.const import ENTER_, CATEGORY_, LAST_SERVICE_, MY_ORDERS_
-from bot.buttons.reply import entr_button, main_menu_buttons, phone_request_button
+from bot.buttons.inline import (build_services_markup, get_free_slots,
+                                make_inline_btn_azim)
+from bot.buttons.reply import (entr_button, main_menu_buttons,
+                               phone_request_button)
+from bot.const import CATEGORY_, ENTER_, LAST_SERVICE_, MY_ORDERS_
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
