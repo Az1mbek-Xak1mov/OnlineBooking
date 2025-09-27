@@ -63,6 +63,7 @@ class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
         print(self.request.user)
         return super().get_queryset()
 
+
 @extend_schema(tags=["Service"])
 class ServiceDeleteAPIView(DestroyAPIView):
     serializer_class = ServiceRetrieveModelSerializer
