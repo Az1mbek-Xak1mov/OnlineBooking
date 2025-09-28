@@ -50,7 +50,6 @@ class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
-    # parser_classes = (MultiPartParser, FormParser)
 
     pagination_class = CustomLimitOffsetPagination
     filterset_class = ServiceFilter
@@ -97,7 +96,6 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
             Service.objects.prefetch_related("schedules", "bookings"),
             pk=self.kwargs["pk"]
         )
-
         serializer = self.get_serializer(service)
         data = serializer.data
 

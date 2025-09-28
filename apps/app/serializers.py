@@ -1,7 +1,7 @@
 from datetime import date as date_cls
 from datetime import datetime, timedelta
 
-from app.models import Booking, Service, ServiceCategory, ServiceSchedule
+from app.models import Booking, Service, ServiceCategory, ServiceSchedule, Location
 from authentication.serializers import UserModelSerializer
 from django.db import transaction
 from django.db.models import Sum
@@ -48,14 +48,19 @@ class ServiceCategoryModelSerializer(ModelSerializer):
         model = ServiceCategory
         fields = '__all__'
 
+class LocationModelSerializer(ModelSerializer):
+    class Meta:
+        model = Location
+        fields = "lat" , "lng", "name"
 
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     schedules = ServiceScheduleSerializer(many=True, required=False)
+    location = LocationModelSerializer()
 
     class Meta:
         model = Service
-        fields = "id", "name", "image", 'owner', 'duration', "price", "description", "address", "capacity", "category", "schedules"
+        fields = "id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category", "schedules" , "location"
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -65,9 +70,11 @@ class ServiceModelSerializer(ModelSerializer):
 
     def create(self, validated_data):
         schedules_data = validated_data.pop("schedules", [])
+        location_data = validated_data.pop("location", [])
         service = Service.objects.create(**validated_data)
         for sch in schedules_data:
             ServiceSchedule.objects.create(service=service, **sch)
+        Location.objects.create(service=service , **location_data)
         return service
 
 

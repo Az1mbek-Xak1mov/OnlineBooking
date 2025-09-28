@@ -5,9 +5,6 @@ mig:
 admin:
 	python3 manage.py createsuperuser
 
-fake-datas:
-	python manage.py loaddata users
-
 flake8:
 	flake8 .
 

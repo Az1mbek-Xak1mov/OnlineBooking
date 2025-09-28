@@ -1,4 +1,4 @@
-from app.models import Park
+from app.models import Location
 from django import forms
 
 
@@ -21,7 +21,7 @@ class LeafletLocationWidget(forms.Widget):
         return context
 
 
-class ParkModelForm(forms.ModelForm):
+class LocationModelForm(forms.ModelForm):
     location_map = forms.Field(
         required=False,
         widget=LeafletLocationWidget(lat_field="lat", lon_field="lng"),
@@ -29,7 +29,7 @@ class ParkModelForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Park
+        model = Location
         fields = "__all__"
         widgets = {
             "lat": forms.NumberInput(attrs={"step": "any"}),

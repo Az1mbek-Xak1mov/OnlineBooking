@@ -6,7 +6,7 @@ from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               CheckConstraint, DateField, DurationField,
                               FloatField, ForeignKey, ImageField, Index, Model,
                               PositiveIntegerField, TextChoices, TextField,
-                              TimeField)
+                              TimeField, UniqueConstraint, OneToOneField)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
@@ -24,7 +24,8 @@ class WeekdayChoices(TextChoices):
     SUNDAY = 'sunday', 'Sunday'
 
 
-class Park(Model):
+class Location(CreatedBaseModel):
+    service = OneToOneField('app.Service', CASCADE, related_name="location" )
     name = CharField(max_length=100)
     lat = FloatField()
     lng = FloatField()
@@ -34,8 +35,7 @@ class Park(Model):
 
 
 class ServiceCategory(CreatedBaseModel):
-    name = CharField(max_length=255)
-
+    name = CharField(max_length=255 , unique=True)
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -48,13 +48,12 @@ class Service(CreatedBaseModel):
     owner = ForeignKey('authentication.User', CASCADE,
                        limit_choices_to={'type': 'provider'}, related_name="services")
     category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
-    name = CharField(max_length=255)
+    name = CharField(max_length=255 , unique=True )
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
     duration = DurationField(default=timedelta(minutes=60))
     price = PositiveIntegerField()
-    description = TextField(blank=True)
-    image = ImageField(upload_to="services/%Y/%m/%d/", null=True, blank=True)
+    description = TextField(blank=True , null=True)
     is_deleted = BooleanField(default=False)
 
     objects = ServiceManager.from_queryset(ServiceQuerySet)()
@@ -68,7 +67,7 @@ class Service(CreatedBaseModel):
                     [],
                     output_field=BooleanField()
                 ),
-                name="duration_multiple_of_60_check"
+                name="duration_multiple_of_30_check"
             )
         ]
 
@@ -85,9 +84,16 @@ class ServiceSchedule(CreatedBaseModel):
             Index(fields=["service", "weekday"]),
         ]
 
+        constraints = [
+            UniqueConstraint(fields=['service', 'weekday'], name='unique_service_weekday')
+        ]
+
     def clean(self):
         if self.start_time >= self.end_time:
             raise ValidationError("start_time must be before end_time")
+
+        if ServiceSchedule.objects.filter(service=self.service, weekday=self.weekday).exclude(pk=self.pk).exists():
+            raise ValidationError({'weekday': 'This weekday is already used for this service.'})
 
     @property
     def start_time_hm(self):
@@ -100,7 +106,7 @@ class Booking(CreatedBaseModel):
     user = ForeignKey('authentication.User',CASCADE,related_name="bookings")
     date = DateField(blank=True, null=True)
     start_time = TimeField()
-    duration = DurationField(blank=True, null=True)
+    duration = DurationField()
     seats = PositiveIntegerField(default=1)
 
     class Meta:

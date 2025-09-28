@@ -1,13 +1,13 @@
-from authentication.forms import ParkModelForm
+from authentication.forms import LocationModelForm
 from django.contrib import admin
 
-from .models import Park, Service, ServiceSchedule
+from .models import Location, Service, ServiceSchedule
 
 
-@admin.register(Park)
-class ParkAdmin(admin.ModelAdmin):
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
     list_display = "name", "lat", "lng"
-    form = ParkModelForm
+    form = LocationModelForm
 
     fieldsets = (
         (None, {
