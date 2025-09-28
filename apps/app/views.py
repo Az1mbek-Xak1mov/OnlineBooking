@@ -177,10 +177,3 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
-
-
-
-
-@extend_schema(tags=['Images'])
-class ImageCreateAPIView(CreateAPIView):
-    serializer_class =
