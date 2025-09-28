@@ -12,15 +12,6 @@ from django.utils import timezone
 
 from apps.shared.models import CreatedBaseModel, UUIDBaseModel
 
-WEEKDAY_NAME_TO_INDEX = {  # TODO toliq olib tashash
-    "monday": 0,
-    "tuesday": 1,
-    "wednesday": 2,
-    "thursday": 3,
-    "friday": 4,
-    "saturday": 5,
-    "sunday": 6,
-}
 
 
 class WeekdayChoices(TextChoices):
@@ -67,7 +58,6 @@ class Service(CreatedBaseModel):
 
     objects = ServiceManager.from_queryset(ServiceQuerySet)()
 
-    # TODO is_deleted false larni olish uchun manager|queryset yozish
 
     class Meta:
         constraints = [
