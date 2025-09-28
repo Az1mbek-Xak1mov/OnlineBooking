@@ -10,7 +10,6 @@ from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
                              ServiceCategoryModelSerializer,
                              ServiceModelSerializer,
                              ServiceRetrieveModelSerializer)
-from django.db.models import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import (CreateAPIView, ListAPIView,
@@ -122,15 +121,23 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
                 slot_start = current_time.time()
                 slot_end = (current_time + duration).time()
 
-                bookings_count = (
-                        Booking.objects.filter(
-                            service=service,
-                            weekday=weekday_name,
-                            start_time=slot_start
-                        ).aggregate(total=Sum("seats"))["total"] or 0
+                overlapping_bookings = Booking.objects.filter(
+                    service=service,
+                    weekday=weekday_name,
                 )
 
-                available_capacity = capacity - bookings_count
+                total_booked = 0
+
+                for booking in overlapping_bookings:
+                    booking_end = (
+                        datetime.combine(timezone.now().date(), booking.start_time)
+                        + booking.duration
+                    ).time()
+
+                    if booking.start_time < slot_end and booking_end > slot_start:
+                        total_booked += booking.seats
+
+                available_capacity = capacity - total_booked
 
                 if available_capacity > 0:
                     free_slots.append({
@@ -148,7 +155,9 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
             })
 
         data["weekday"] = weekdays_data
+
         return Response(data)
+
 
 
 @extend_schema(tags=['Booking'])
