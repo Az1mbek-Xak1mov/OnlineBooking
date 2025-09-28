@@ -1,28 +1,29 @@
+import os
 import asyncio
 import logging
 import sys
-from os import getenv
-
-from aiogram import Bot
 from dotenv import load_dotenv
-
-from bot.handlers.main import online_booking
 
 load_dotenv()
 
-TOKEN = getenv('BOT_TOKEN')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
+import django
+django.setup()
 
+from bot.loader import bot, dp
+from bot.handlers import register_all_handlers
 
-async def main() -> None:
-
-    bot = Bot(token=TOKEN)
-    await online_booking.start_polling(bot)
-
-
-if __name__ == "__main__":
+def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
         stream=sys.stdout,
         format="%(asctime)s | %(levelname)s | %(message)s"
     )
+
+async def main():
+    setup_logging()
+    register_all_handlers(dp)
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
     asyncio.run(main())
