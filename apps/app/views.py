@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from tkinter import Image
 
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -128,8 +129,8 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
 
                 for booking in overlapping_bookings:
                     booking_end = (
-                        datetime.combine(timezone.now().date(), booking.start_time)
-                        + booking.duration
+                            datetime.combine(timezone.now().date(), booking.start_time)
+                            + booking.duration
                     ).time()
 
                     if booking.start_time < slot_end and booking_end > slot_start:
@@ -157,7 +158,6 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
         return Response(data)
 
 
-
 @extend_schema(tags=['Booking'])
 class BookingCreateAPIView(CreateAPIView):
     serializer_class = BookingModelSerializer
@@ -177,3 +177,10 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
+
+
+
+
+@extend_schema(tags=['Images'])
+class ImageCreateAPIView(CreateAPIView):
+    serializer_class =
