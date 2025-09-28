@@ -54,35 +54,34 @@ def build_services_markup(services, category_id, page=0):
 
 from datetime import datetime, timedelta
 
-
 def get_free_slots(service, target_date):
+    from app.models import Booking
     weekday_name = target_date.strftime("%A").lower()
-
     schedules = service.schedules.filter(weekday=weekday_name)
     if not schedules.exists():
         return []
 
-    duration = service.duration
+    duration: timedelta = service.duration or timedelta(minutes=30)
     free_slots = []
 
     for sch in schedules:
         start_dt = datetime.combine(target_date, sch.start_time)
         end_dt = datetime.combine(target_date, sch.end_time)
         current = start_dt
+
         while current + duration <= end_dt:
             slot_start = current.time()
             slot_end = (current + duration).time()
-            from app.models import Booking
-
-            exists = Booking.objects.filter(
+            booked_count = Booking.objects.filter(
                 service=service,
                 date=target_date,
-                start_time=slot_start,
-                end_time=slot_end
-            ).exists()
+                start_time=slot_start
+            ).count()
 
-            if not exists:
-                free_slots.append(f"{slot_start.strftime('%H:%M')} - {slot_end.strftime('%H:%M')}")
+            free_seats = max(service.capacity - booked_count, 0)
+
+            if free_seats > 0:
+                free_slots.append(f"{slot_start.strftime('%H:%M')} - {slot_end.strftime('%H:%M')} ({free_seats} places)")
 
             current += duration
 

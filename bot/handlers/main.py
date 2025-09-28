@@ -1,9 +1,6 @@
 import os
 import re
-from datetime import date as date_cls
-from datetime import datetime
-from datetime import time as time_cls
-from datetime import timedelta
+from datetime import date as date_cls, datetime, time as time_cls, timedelta
 
 import django
 from aiogram import Dispatcher, F
@@ -14,16 +11,14 @@ from aiogram.types import CallbackQuery, Message
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
-from bot.buttons.inline import (build_services_markup, get_free_slots,
-                                make_inline_btn_azim)
-from bot.buttons.reply import (entr_button, main_menu_buttons,
-                               phone_request_button)
-from bot.const import CATEGORY_, ENTER_, LAST_SERVICE_, MY_ORDERS_
+from bot.buttons.inline import build_services_markup, get_free_slots, make_inline_btn_azim
+from bot.buttons.reply import entr_button, main_menu_buttons, phone_request_button
+from bot.const import CATEGORY_, ENTER_, LAST_SERVICE_, MY_ORDERS_, FEEDBACK_
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from app.models import Booking, Service, ServiceCategory
+from app.models import Booking, Service, ServiceCategory, Demand
 from authentication.models import User
 
 online_booking = Dispatcher()
@@ -38,19 +33,14 @@ class AuthState(StatesGroup):
 async def cmd_start(message: Message):
     await message.answer("Salom! Kirish uchun tugmani bosing:", reply_markup=entr_button())
 
+
 @online_booking.message(F.text == ENTER_)
 async def process_entry(message: Message, state: FSMContext):
     user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
     if user:
-        await message.answer(
-            "✅ Kirish muvaffaqiyatli! Xush kelibsiz.",
-            reply_markup=main_menu_buttons()
-        )
+        await message.answer("✅ Kirish muvaffaqiyatli! Xush kelibsiz.", reply_markup=main_menu_buttons())
     else:
-        await message.answer(
-            "📞 Telefon raqamingizni yuboring:",
-            reply_markup=phone_request_button()
-        )
+        await message.answer("📞 Telefon raqamingizni yuboring:", reply_markup=phone_request_button())
         await state.set_state(AuthState.waiting_for_phone)
 
 
@@ -68,10 +58,7 @@ async def process_phone(message: Message, state: FSMContext):
     if user:
         user.telegram_id = message.from_user.id
         await user.asave()
-        await message.answer(
-            "✅ Telefon raqam topildi va akkauntingizga kirildi!",
-            reply_markup=main_menu_buttons()
-        )
+        await message.answer("✅ Telefon raqam topildi va akkauntingizga kirildi!", reply_markup=main_menu_buttons())
         await state.clear()
     else:
         await state.update_data(phone=phone)
@@ -94,19 +81,12 @@ async def process_password(message: Message, state: FSMContext):
     first_name = message.from_user.first_name or ""
     last_name = message.from_user.last_name or ""
 
-    user = User(
-        phone_number=phone,
-        telegram_id=message.from_user.id,
-        first_name=first_name,
-        last_name=last_name
-    )
+    user = User(phone_number=phone, telegram_id=message.from_user.id, first_name=first_name, last_name=last_name)
     await sync_to_async(user.set_password)(password)
     await user.asave()
 
-    await message.answer(
-        "✅ Akkaunt yaratildi va tizimga kirdingiz! Xush kelibsiz.",
-        reply_markup=main_menu_buttons()
-    )
+    await message.answer("✅ Akkaunt yaratildi va tizimga kirdingiz! Xush kelibsiz.", reply_markup=main_menu_buttons())
+
 
 @online_booking.message(F.text == LAST_SERVICE_)
 async def last_orders(message: Message):
@@ -116,14 +96,13 @@ async def last_orders(message: Message):
         return
 
     orders = await sync_to_async(lambda: list(
-        Booking.objects.filter(user=user)
-        .order_by("-id")
-        .select_related("service")[:5]
+        Booking.objects.filter(user=user).order_by("-id").select_related("service")[:5]
     ))()
 
     if orders:
         text = "\n".join([
-            f"📌 Order nom {o.service.name}"
+            f"📌 {o.service.name} | {o.date} {o.start_time.strftime('%H:%M')} - "
+            f"{(datetime.combine(o.date, o.start_time) + o.duration).time().strftime('%H:%M')}"
             for o in orders
         ])
     else:
@@ -134,23 +113,30 @@ async def last_orders(message: Message):
 
 @online_booking.message(F.text == MY_ORDERS_)
 async def process_orders(message: Message):
-    now_time = timezone.now()
+    now = timezone.localtime()
+    user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
+    if not user:
+        await message.answer("❌ Siz ro'yxatdan o'tmagansiz!")
+        return
+
     orders = await sync_to_async(lambda: list(
-        Booking.objects.filter(
-            user__telegram_id=message.from_user.id,
-            end_time__gt=now_time
-        ).select_related("service")
+        Booking.objects.filter(user=user).select_related("service")
     ))()
 
-    if not orders:
+    active_orders = []
+    for o in orders:
+        end_dt = datetime.combine(o.date, o.start_time) + o.duration
+        if end_dt > now:
+            active_orders.append((o, end_dt))
+
+    if not active_orders:
         await message.answer("Sizda faol buyurtmalar yo‘q.")
     else:
         text = "\n".join([
-            f"Buyurtma nom {o.service.name}, tugash vaqti: {o.end_time}"
-            for o in orders
+            f"📌 {o.service.name} | {o.date} {o.start_time.strftime('%H:%M')} - {end_dt.strftime('%H:%M')}"
+            for o, end_dt in active_orders
         ])
         await message.answer(text)
-
 
 
 @online_booking.message(F.text == CATEGORY_)
@@ -238,25 +224,23 @@ async def process_category_callback(callback: CallbackQuery):
         )
 
         await callback.message.edit_text(
-            f"📅 Mavjud slotlar yoqilgan {target_date.strftime('%d-%m-%Y')}:",
+            f"📅 Mavjud slotlar {target_date.strftime('%d-%m-%Y')}:",
             reply_markup=markup
         )
 
     elif callback.data.startswith("slot_"):
         _, service_id, date_str, start_str = callback.data.split("_")
         service = await Service.objects.aget(id=service_id)
-
         target_date = date_cls.fromisoformat(date_str)
         start_time = time_cls.fromisoformat(start_str)
-        end_time = (datetime.combine(target_date, start_time) + service.duration).time()
+        duration: timedelta = service.duration
 
+        end_time = (datetime.combine(target_date, start_time) + duration).time()
         user = await User.objects.aget(telegram_id=callback.from_user.id)
 
         exists = await Booking.objects.filter(
-            service=service, date=target_date,
-            start_time=start_time, end_time=end_time
+            service=service, date=target_date, start_time=start_time
         ).aexists()
-
         if exists:
             await callback.message.edit_text("❌ Afsuski, slot endigina olingan.")
             return
@@ -265,8 +249,10 @@ async def process_category_callback(callback: CallbackQuery):
             user=user,
             service=service,
             date=target_date,
+            weekday=target_date.strftime("%A").lower(),
             start_time=start_time,
-            end_time=end_time
+            duration=duration,
+            seats=1
         )
         await booking.asave()
 
@@ -275,5 +261,33 @@ async def process_category_callback(callback: CallbackQuery):
             f"📅 {target_date.strftime('%d-%m-%Y')}\n"
             f"🕒 {start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
         )
+
+
+class DemandState(StatesGroup):
+    waiting_for_text = State()
+
+
+@online_booking.message(F.text == FEEDBACK_)
+async def start_demand(message: Message, state: FSMContext):
+    await message.answer("✍️ Введите описание:")
+    await state.set_state(DemandState.waiting_for_text)
+
+
+@online_booking.message(DemandState.waiting_for_text)
+async def process_demand(message: Message, state: FSMContext):
+    user_tg_id = message.from_user.id
+    main_text = message.text
+
+    async def save_demand():
+        user = await sync_to_async(User.objects.get)(telegram_id=user_tg_id)
+        return await sync_to_async(Demand.objects.create)(
+            user=user,
+            main_text=main_text
+        )
+
+    demand = await save_demand()
+
+    await message.answer(f"✅ Спрос сохранён")
+    await state.clear()
 
 
