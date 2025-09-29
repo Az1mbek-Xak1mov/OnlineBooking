@@ -7,18 +7,20 @@ from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import (CreateAPIView, ListAPIView,
                                      ListCreateAPIView, RetrieveAPIView,
-                                     get_object_or_404, DestroyAPIView)
+                                     get_object_or_404, DestroyAPIView, RetrieveDestroyAPIView,
+                                     RetrieveUpdateDestroyAPIView)
+from rest_framework.parsers import FileUploadParser, MultiPartParser, JSONParser
 from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+                                        IsAuthenticatedOrReadOnly, AllowAny)
 from rest_framework.response import Response
 
 from app.mixins import FilterSearchMixin
-from app.models import Booking, Service, ServiceCategory
+from app.models import Booking, Service, ServiceCategory, Location
 from app.permissions import IsProvider
 from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
                              ServiceCategoryModelSerializer,
-                             ServiceModelSerializer,
-                             ServiceRetrieveModelSerializer)
+                             ServiceModelSerializer, ServiceUpdateModelSerializer
+                             )
 from shared.filters import ServiceFilter
 from shared.paginations import CustomLimitOffsetPagination
 
@@ -56,41 +58,26 @@ class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     filterset_class = ServiceFilter
     search_fields = 'category', 'name', 'address', 'capacity', 'price', 'description'
 
+    def create(self, request, *args, **kwargs):
+        import json
+        data = request.data.copy()
+        data["location"] = json.loads(data["location"])
+
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid()
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def get_queryset(self):
         print(self.request.user)
         return super().get_queryset()
 
 
 @extend_schema(tags=["Service"])
-class ServiceDeleteAPIView(DestroyAPIView):
-    serializer_class = ServiceRetrieveModelSerializer
+class ServiceDeleteUpdateGetAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ServiceUpdateModelSerializer
     permission_classes = (IsProvider,)
-
-    def get_queryset(self):
-        return Service.objects.filter(is_deleted=False)
-
-    def perform_destroy(self, instance):
-        user = self.request.user
-        if instance.owner != user:
-            raise PermissionDenied("You do not have permission to delete this service.")
-
-        instance.is_deleted = True
-        instance.save(update_fields=["is_deleted"])
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(
-            {"detail": f"Service '{instance.name}' successfully marked as deleted."},
-            status=status.HTTP_200_OK
-        )
-
-
-@extend_schema(tags=['Service'])
-class ServiceRetrieveAPIView(RetrieveAPIView):
-    serializer_class = ServiceRetrieveModelSerializer
-    queryset = Service.objects.all()
-    authentication_classes = ()
 
     def retrieve(self, request, *args, **kwargs):
         service = get_object_or_404(
@@ -146,6 +133,30 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
 
         data["weekday"] = weekdays_data
         return Response(data)
+
+    def get_queryset(self):
+        return Service.objects.filter(is_deleted=False)
+
+    def perform_update(self, instance):
+        user = self.request.user
+        if instance.owner != user:
+            raise PermissionDenied("You do not have permission to update this service.")
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if instance.owner != user:
+            raise PermissionDenied("You do not have permission to delete this service.")
+
+        instance.is_deleted = True
+        instance.save(update_fields=["is_deleted"])
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"detail": f"Service '{instance.name}' successfully marked as deleted."},
+            status=status.HTTP_200_OK
+        )
 
 
 @extend_schema(tags=['Booking'])

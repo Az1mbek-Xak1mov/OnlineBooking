@@ -1,14 +1,14 @@
 from datetime import date as date_cls
 from datetime import datetime
 
-from app.models import Booking, Service, ServiceCategory, ServiceSchedule, Location
-from authentication.serializers import UserModelSerializer
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CurrentUserDefault, HiddenField
+from rest_framework.fields import CurrentUserDefault, HiddenField, ListField, ImageField
 from rest_framework.serializers import ModelSerializer, TimeField
+
+from app.models import Booking, Service, ServiceCategory, ServiceSchedule, Location, ServiceImage
 
 
 class ServiceCategoryModelSerializer(ModelSerializer):
@@ -48,6 +48,13 @@ class ServiceScheduleSerializer(ModelSerializer):
             raise ValidationError("start_time must be before end_time")
         return data
 
+
+class ServiceImageModelSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceImage
+        fields = 'image',
+
+
 class LocationModelSerializer(ModelSerializer):
     class Meta:
         model = Location
@@ -57,12 +64,13 @@ class LocationModelSerializer(ModelSerializer):
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     schedules = ServiceScheduleSerializer(many=True, required=False)
-    location = LocationModelSerializer()
+    location = LocationModelSerializer(required=False)
+    images = ListField(child=ImageField(), write_only=True)
 
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                  "schedules", "location")
+                  "schedules", "location", "images")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -72,21 +80,21 @@ class ServiceModelSerializer(ModelSerializer):
 
     def create(self, validated_data):
         schedules_data = validated_data.pop("schedules", [])
+        images_data = validated_data.pop("images", [])
         location_data = validated_data.pop("location", [])
         service = Service.objects.create(**validated_data)
         for sch in schedules_data:
             ServiceSchedule.objects.create(service=service, **sch)
+        for img in images_data:
+            ServiceImage.objects.create(service=service, image=img)
         Location.objects.create(service=service, **location_data)
         return service
 
+    def to_representation(self, instance: Service):
+        to_repr = super().to_representation(instance)
+        to_repr['images'] = ServiceImageModelSerializer(instance.images.all(), many=True).data
 
-class ServiceRetrieveModelSerializer(ModelSerializer):
-    category = ServiceCategoryModelSerializer()
-    owner = UserModelSerializer()
-
-    class Meta:
-        model = Service
-        fields = "__all__"
+        return to_repr
 
 
 class BookingHistorySerializer(ModelSerializer):
@@ -178,3 +186,15 @@ class BookingModelSerializer(ModelSerializer):
             )
 
         return booking
+
+
+class ServiceUpdateModelSerializer(ModelSerializer):
+    owner = HiddenField(default=CurrentUserDefault())
+    schedules = ServiceScheduleSerializer(many=True, required=False)
+    location = LocationModelSerializer()
+
+    class Meta:
+        model = Service
+        fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
+                  "schedules", "location")
+        read_only_fields = "id",

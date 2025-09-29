@@ -108,11 +108,8 @@ filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
 12. pytest, github cicd (test, deploy)
 
 
-13. test
-models (crud)
-urls (name bilan)
-serializers
-views
+13.user edit
+
 
 
 14.
