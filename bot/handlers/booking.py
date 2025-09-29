@@ -1,9 +1,10 @@
 from datetime import datetime, date as date_cls, time as time_cls, timedelta
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from asgiref.sync import sync_to_async
 from django.utils import timezone
-
+from aiogram.utils.i18n import gettext as _
+from aiogram.utils.i18n import lazy_gettext as __
 from bot.const import LAST_SERVICE_, MY_ORDERS_, CATEGORY_
 from bot.buttons.inline import build_services_markup, get_free_slots, make_inline_btn_azim
 from bot.buttons.reply import main_menu_buttons
@@ -68,7 +69,8 @@ async def process_orders(message: Message):
 async def process_categories(message: Message):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
     buttons = [i.name for i in categories]
-    await message.answer("Categories:", reply_markup=make_inline_btn_azim(buttons, [3]))
+    await message.answer(_("Tugmalardan foydalaning"), reply_markup=ReplyKeyboardRemove())
+    await message.answer("Kategoriyalar:", reply_markup=make_inline_btn_azim(buttons, [3]))
 
 @router.callback_query()
 async def process_category_callback(callback: CallbackQuery):
