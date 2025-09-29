@@ -1,17 +1,16 @@
 from datetime import timedelta
 
-from app.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               CheckConstraint, DateField, DurationField,
-                              FloatField, ForeignKey, ImageField, Index, Model,
+                              FloatField, ForeignKey, Index, Model,
                               PositiveIntegerField, TextChoices, TextField,
                               TimeField, UniqueConstraint, OneToOneField)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
+from app.managers import ServiceManager, ServiceQuerySet
 from apps.shared.models import CreatedBaseModel, UUIDBaseModel
-
 
 
 class WeekdayChoices(TextChoices):
@@ -25,7 +24,7 @@ class WeekdayChoices(TextChoices):
 
 
 class Location(CreatedBaseModel):
-    service = OneToOneField('app.Service', CASCADE, related_name="location" )
+    service = OneToOneField('app.Service', CASCADE, related_name="location")
     name = CharField(max_length=100)
     lat = FloatField()
     lng = FloatField()
@@ -35,7 +34,8 @@ class Location(CreatedBaseModel):
 
 
 class ServiceCategory(CreatedBaseModel):
-    name = CharField(max_length=255 , unique=True)
+    name = CharField(max_length=255, unique=True)
+
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -48,16 +48,15 @@ class Service(CreatedBaseModel):
     owner = ForeignKey('authentication.User', CASCADE,
                        limit_choices_to={'type': 'provider'}, related_name="services")
     category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
-    name = CharField(max_length=255 , unique=True )
+    name = CharField(max_length=255, unique=True)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
     duration = DurationField(default=timedelta(minutes=60))
     price = PositiveIntegerField()
-    description = TextField(blank=True , null=True)
+    description = TextField(blank=True, null=True)
     is_deleted = BooleanField(default=False)
 
     objects = ServiceManager.from_queryset(ServiceQuerySet)()
-
 
     class Meta:
         constraints = [
@@ -88,6 +87,13 @@ class ServiceSchedule(CreatedBaseModel):
             UniqueConstraint(fields=['service', 'weekday'], name='unique_service_weekday')
         ]
 
+    @property
+    def weekday_order(self):
+        for index, weekday in enumerate(WeekdayChoices.choices):
+            if weekday[0] == self.weekday:
+                return index
+        return 0
+
     def clean(self):
         if self.start_time >= self.end_time:
             raise ValidationError("start_time must be before end_time")
@@ -101,20 +107,9 @@ class ServiceSchedule(CreatedBaseModel):
 
 
 class Booking(CreatedBaseModel):
-    service = ForeignKey(
-        "app.Service",
-        on_delete=CASCADE,
-        related_name="bookings"
-    )
-    weekday = CharField(
-        max_length=9,
-        choices=WeekdayChoices.choices
-    )
-    user = ForeignKey(
-        'authentication.User',
-        CASCADE,
-        related_name="bookings"
-    )
+    service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
+    weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
+    user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
     date = DateField(blank=True, null=True)
     start_time = TimeField()
     duration = DurationField()
@@ -174,9 +169,10 @@ class Booking(CreatedBaseModel):
 
         super().save(*args, **kwargs)
 
+
 class Demand(CreatedBaseModel):
     user = ForeignKey(
         'authentication.User',
         CASCADE,
         related_name="demands")
-    main_text=TextField(blank=True)
+    main_text = TextField(blank=True)

@@ -1,7 +1,9 @@
-from authentication.forms import LocationModelForm
 from django.contrib import admin
+from django.db.models import Case, When
+from django.db.models.fields import IntegerField
 
-from .models import Location, Service, ServiceSchedule
+from authentication.forms import LocationModelForm
+from .models import Location, Service, ServiceSchedule, WeekdayChoices
 
 
 @admin.register(Location)
@@ -29,6 +31,18 @@ class ServiceScheduleAdmin(admin.ModelAdmin):
 
 class ServiceScheduleStackedInline(admin.StackedInline):
     model = ServiceSchedule
+    ordering = (
+        Case(
+            When(weekday=WeekdayChoices.MONDAY, then=0),
+            When(weekday=WeekdayChoices.TUESDAY, then=1),
+            When(weekday=WeekdayChoices.WEDNESDAY, then=2),
+            When(weekday=WeekdayChoices.THURSDAY, then=3),
+            When(weekday=WeekdayChoices.FRIDAY, then=4),
+            When(weekday=WeekdayChoices.SATURDAY, then=5),
+            When(weekday=WeekdayChoices.SUNDAY, then=6),
+            output_field=IntegerField(),
+        ),
+    )
     min_num = 0
     extra = 0
 
