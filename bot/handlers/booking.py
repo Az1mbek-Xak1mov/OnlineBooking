@@ -34,6 +34,7 @@ async def last_orders(message: Message):
 
     await message.answer(text, reply_markup=main_menu_buttons())
 
+
 @router.message(F.text == MY_ORDERS_)
 async def process_orders(message: Message):
     now = timezone.localtime()
@@ -48,7 +49,9 @@ async def process_orders(message: Message):
 
     active_orders = []
     for o in orders:
-        end_dt = datetime.combine(o.date, o.start_time) + o.duration
+        naive_end_dt = datetime.combine(o.date, o.start_time) + o.duration
+        end_dt = timezone.make_aware(naive_end_dt)   # ✅ делаем aware
+
         if end_dt > now:
             active_orders.append((o, end_dt))
 
