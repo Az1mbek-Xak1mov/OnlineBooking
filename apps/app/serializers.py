@@ -152,6 +152,8 @@ class BookingModelSerializer(ModelSerializer):
         end_time = (start_dt + duration).time()
 
         with transaction.atomic():
+            # TODO fix filter
+            # filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
             overlapping = Booking.objects.select_for_update().filter(
                 service=service,
                 weekday=weekday,

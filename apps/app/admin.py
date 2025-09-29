@@ -21,9 +21,19 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceSchedule)
 class ServiceScheduleAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['id', 'service__name', 'weekday', 'start_time', 'end_time']
+    list_select_related = ['service']
+    list_filter = ['weekday']
+    search_fields = ['service__name']
+
+
+class ServiceScheduleStackedInline(admin.StackedInline):
+    model = ServiceSchedule
+    min_num = 0
+    extra = 0
 
 
 @admin.register(Service)
 class ServiceModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'duration']
+    list_display = ['id', 'name', 'price', 'duration']
+    inlines = (ServiceScheduleStackedInline,)
