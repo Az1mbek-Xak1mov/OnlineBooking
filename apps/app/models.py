@@ -70,6 +70,9 @@ class Service(CreatedBaseModel):
             )
         ]
 
+    def __str__(self):
+        return self.name
+
 
 class ServiceSchedule(CreatedBaseModel):
     service = ForeignKey('app.Service', CASCADE, related_name="schedules")

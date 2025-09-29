@@ -1,5 +1,9 @@
+
+from django.contrib.auth.forms import AuthenticationForm
+
 from app.models import Location
 from django import forms
+
 
 
 class LeafletLocationWidget(forms.Widget):
@@ -35,3 +39,13 @@ class LocationModelForm(forms.ModelForm):
             "lat": forms.NumberInput(attrs={"step": "any"}),
             "lng": forms.NumberInput(attrs={"step": "any"}),
         }
+
+
+
+class PhoneLoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = "Phone number"
+        self.fields['username'].widget.attrs.update({
+            'placeholder': '+998 90 123 45 67'
+        })

@@ -3,8 +3,7 @@ from django.db.models import Case, When
 from django.db.models.fields import IntegerField
 
 from authentication.forms import LocationModelForm
-from .models import Location, Service, ServiceSchedule, WeekdayChoices
-
+from .models import Location, Service, ServiceSchedule, WeekdayChoices, ServiceCategory, Booking
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
@@ -19,6 +18,13 @@ class LocationAdmin(admin.ModelAdmin):
             "fields": ("location_map",),
         }),
     )
+
+
+@admin.register(ServiceCategory)
+class ServiceCategoryAdmin(admin.ModelAdmin):
+    list_display = "id", "name",
+    list_filter = "name",
+    search_fields = "name",
 
 
 @admin.register(ServiceSchedule)
@@ -50,4 +56,17 @@ class ServiceScheduleStackedInline(admin.StackedInline):
 @admin.register(Service)
 class ServiceModelAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'price', 'duration']
-    inlines = (ServiceScheduleStackedInline,)
+
+    list_select_related = ['category', ]
+    list_filter = 'name', 'category__name'
+    search_fields = 'name', 'category__name', 'address', 'price'
+
+    inlines = ServiceScheduleStackedInline,
+
+
+@admin.register(Booking)
+class BookingAdmin(admin.ModelAdmin):
+    list_display = 'id', 'date', 'seats'
+    list_select_related = ['service', 'user']
+    list_filter = 'date',
+    search_fields = 'user__name', 'date', 'service__name'
