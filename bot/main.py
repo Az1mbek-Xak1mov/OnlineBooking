@@ -2,6 +2,7 @@ import os
 import asyncio
 import logging
 import sys
+from aiogram.utils.i18n import I18n, FSMI18nMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +22,8 @@ def setup_logging():
     )
 
 async def main():
+    # i18n = I18n(path='locales', default_locale='uz', domain='messages')
+    # dp.update.middleware.register(FSMI18nMiddleware(i18n))
     setup_logging()
     register_all_handlers(dp)
     await dp.start_polling(bot)

@@ -69,7 +69,7 @@ async def process_orders(message: Message):
 async def process_categories(message: Message):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
     buttons = [i.name for i in categories]
-    await message.answer(_("Tugmalardan foydalaning"), reply_markup=ReplyKeyboardRemove())
+    await message.answer("Tugmalardan foydalaning", reply_markup=ReplyKeyboardRemove())
     await message.answer("Kategoriyalar:", reply_markup=make_inline_btn_azim(buttons, [3]))
 
 @router.callback_query()
