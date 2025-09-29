@@ -155,6 +155,16 @@ class BookingCreateAPIView(CreateAPIView):
 
 
 @extend_schema(tags=['Booking'])
+class PendingBookingListAPIView(ListAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingModelSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(status=Booking.StatusType.PENDING, user=self.request.user)
+
+
+@extend_schema(tags=['Booking'])
 class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     serializer_class = BookingHistorySerializer
     queryset = Booking.objects.all()

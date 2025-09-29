@@ -11,6 +11,12 @@ from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, TimeField
 
 
+class ServiceCategoryModelSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = '__all__'
+
+
 class ServiceScheduleSerializer(ModelSerializer):
     start_time = TimeField(
         format='%H:%M',
@@ -41,13 +47,6 @@ class ServiceScheduleSerializer(ModelSerializer):
         if data["start_time"] >= data["end_time"]:
             raise ValidationError("start_time must be before end_time")
         return data
-
-
-class ServiceCategoryModelSerializer(ModelSerializer):
-    class Meta:
-        model = ServiceCategory
-        fields = '__all__'
-
 
 class LocationModelSerializer(ModelSerializer):
     class Meta:

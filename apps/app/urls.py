@@ -1,6 +1,7 @@
 from app.views import (BookingCreateAPIView, ServiceCategoryListAPIView,
                        ServiceListCreateAPIView, ServiceRetrieveAPIView,
-                       UserBookingHistoryListAPIView, ServiceDeleteAPIView, MyServicesListApiView)
+                       UserBookingHistoryListAPIView, ServiceDeleteAPIView, MyServicesListApiView,
+                       PendingBookingListAPIView)
 from django.urls import path
 
 urlpatterns = [
@@ -8,9 +9,10 @@ urlpatterns = [
 
     path("services/", ServiceListCreateAPIView.as_view(), name="service-create"),
     path("services/<uuid:pk>", ServiceDeleteAPIView.as_view(), name="service-delete"),
-    path("services/<uuid:pk>/", ServiceRetrieveAPIView.as_view(), name="service-detail"),
+    path("services/<uuid:pk>", ServiceRetrieveAPIView.as_view(), name="service-detail"),
     path("services/my-services/", MyServicesListApiView.as_view(), name="my-service"),
 
     path("bookings/", BookingCreateAPIView.as_view(), name="booking-create"),
-    path("users/booking/hostory/", UserBookingHistoryListAPIView.as_view(), name="user-booking-history"),
+    path("users/booking/history/pending/", PendingBookingListAPIView.as_view(), name="user-booking-history-pending"),
+    path("users/booking/history/", UserBookingHistoryListAPIView.as_view(), name="user-booking-history"),
 ]

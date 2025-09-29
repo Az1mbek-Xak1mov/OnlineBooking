@@ -110,7 +110,10 @@ class ServiceSchedule(CreatedBaseModel):
 
 
 class Booking(CreatedBaseModel):
-    service = ForeignKey("app.Service", on_delete=CASCADE, related_name="bookings")
+    class StatusType(TextChoices):
+        PENDING = 'pending', 'Pending'
+        PASSED = 'passed', 'Passed'
+    service = ForeignKey("app.Service", CASCADE, related_name="bookings")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
     date = DateField(blank=True, null=True)
@@ -118,6 +121,7 @@ class Booking(CreatedBaseModel):
     duration = DurationField()
     end_time = TimeField(blank=True, null=True)
     seats = PositiveIntegerField(default=1)
+    status = CharField(max_length=15, choices=StatusType.choices, default=StatusType.PENDING)
 
     class Meta:
         indexes = [
