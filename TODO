@@ -108,6 +108,17 @@ filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
 12. pytest, github cicd (test, deploy)
 
 
+13. test
+models (crud)
+urls (name bilan)
+serializers
+views
+
+
+14.
+redis browser
+
+
 
 Kiyim do'kon
 https://www.figma.com/design/QIo4vUncOIn0uzCqYqWGYe/Online-Shopping-Website-Design---eCommerce-Store-Website---UI-Kit-(Community)?node-id=0-1&p=f&t=azeiDvWWQmJMeZeB-0
