@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from django.db.models.aggregates import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -103,9 +104,8 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
         capacity = service.capacity
 
         weekdays_data = []
-        schedules = service.schedules.all()
 
-        for schedule in schedules:
+        for schedule in service.schedules.all():
             weekday_name = schedule.weekday
             start_time = schedule.start_time
             end_time = schedule.end_time
@@ -122,19 +122,11 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
                 overlapping_bookings = Booking.objects.filter(
                     service=service,
                     weekday=weekday_name,
+                    start_time__lt=slot_end,
+                    end_time__gt=slot_start
                 )
 
-                total_booked = 0
-
-                for booking in overlapping_bookings:
-                    booking_end = (
-                            datetime.combine(timezone.now().date(), booking.start_time)
-                            + booking.duration
-                    ).time()
-
-                    if booking.start_time < slot_end and booking_end > slot_start:
-                        total_booked += booking.seats
-
+                total_booked = overlapping_bookings.aggregate(total=Sum("seats"))["total"] or 0
                 available_capacity = capacity - total_booked
 
                 if available_capacity > 0:
@@ -153,7 +145,6 @@ class ServiceRetrieveAPIView(RetrieveAPIView):
             })
 
         data["weekday"] = weekdays_data
-
         return Response(data)
 
 

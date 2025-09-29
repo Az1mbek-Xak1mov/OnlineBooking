@@ -1,16 +1,16 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               CheckConstraint, DateField, DurationField,
-                              FloatField, ForeignKey, Index, Model,
+                              FloatField, ForeignKey, Index,
                               PositiveIntegerField, TextChoices, TextField,
                               TimeField, UniqueConstraint, OneToOneField)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
 from app.managers import ServiceManager, ServiceQuerySet
-from apps.shared.models import CreatedBaseModel, UUIDBaseModel
+from apps.shared.models import CreatedBaseModel
 
 
 class WeekdayChoices(TextChoices):
@@ -45,8 +45,8 @@ class ServiceCategory(CreatedBaseModel):
 
 
 class Service(CreatedBaseModel):
-    owner = ForeignKey('authentication.User', CASCADE,
-                       limit_choices_to={'type': 'provider'}, related_name="services")
+    owner = ForeignKey('authentication.User', CASCADE, limit_choices_to={'type': 'provider'},
+                       related_name="services")
     category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
     name = CharField(max_length=255, unique=True)
     address = CharField(max_length=255)
@@ -113,6 +113,7 @@ class Booking(CreatedBaseModel):
     date = DateField(blank=True, null=True)
     start_time = TimeField()
     duration = DurationField()
+    end_time = TimeField(blank=True, null=True)
     seats = PositiveIntegerField(default=1)
 
     class Meta:
@@ -138,9 +139,7 @@ class Booking(CreatedBaseModel):
             self.duration = service_duration
         else:
             if self.duration.total_seconds() % service_duration.total_seconds() != 0:
-                raise ValidationError(
-                    f"Booking duration must be a multiple of service duration ({service_duration})."
-                )
+                raise ValidationError(f"Booking duration must be a multiple of service duration ({service_duration}).")
 
         if self.weekday not in WeekdayChoices.values:
             raise ValidationError(f"Invalid weekday: {self.weekday}")
@@ -166,6 +165,11 @@ class Booking(CreatedBaseModel):
             self.start_time = self.start_time.replace(second=0, microsecond=0)
 
         self.clean()
+
+        if self.start_time and self.duration:
+            dt = datetime.combine(datetime.today(), self.start_time)
+            end_dt = dt + self.duration
+            self.end_time = end_dt.time().replace(microsecond=0)
 
         super().save(*args, **kwargs)
 

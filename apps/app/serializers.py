@@ -1,5 +1,5 @@
 from datetime import date as date_cls
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from app.models import Booking, Service, ServiceCategory, ServiceSchedule, Location
 from authentication.serializers import UserModelSerializer
@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CurrentUserDefault, HiddenField, ListField
+from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, TimeField
 
 
@@ -48,10 +48,12 @@ class ServiceCategoryModelSerializer(ModelSerializer):
         model = ServiceCategory
         fields = '__all__'
 
+
 class LocationModelSerializer(ModelSerializer):
     class Meta:
         model = Location
-        fields = "lat" , "lng", "name"
+        fields = "lat", "lng", "name"
+
 
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
@@ -60,7 +62,8 @@ class ServiceModelSerializer(ModelSerializer):
 
     class Meta:
         model = Service
-        fields = "id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category", "schedules" , "location"
+        fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
+                  "schedules", "location")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -74,7 +77,7 @@ class ServiceModelSerializer(ModelSerializer):
         service = Service.objects.create(**validated_data)
         for sch in schedules_data:
             ServiceSchedule.objects.create(service=service, **sch)
-        Location.objects.create(service=service , **location_data)
+        Location.objects.create(service=service, **location_data)
         return service
 
 
@@ -98,12 +101,7 @@ class BookingModelSerializer(ModelSerializer):
 
     start_time = TimeField(
         format='%H:%M',
-        input_formats=[
-            '%H:%M:%S.%fZ',
-            '%H:%M:%SZ',
-            '%H:%M:%S',
-            '%H:%M',
-        ],
+        input_formats=['%H:%M:%S.%fZ', '%H:%M:%SZ', '%H:%M:%S', '%H:%M'],
         allow_null=False
     )
 
@@ -119,25 +117,30 @@ class BookingModelSerializer(ModelSerializer):
 
     def validate(self, data):
         service = data["service"]
-        seats = data.get("seats", 1)
         weekday = data["weekday"]
         start_time = data["start_time"]
-        duration = data.get("duration", service.duration)
+        seats = data.get("seats", 1)
+        duration = data.get("duration") or service.duration
+
+        start_dt = datetime.combine(date_cls.min, start_time)
+        candidate_end_time = (start_dt + duration).time()
 
         if seats > service.capacity:
             raise ValidationError("Seats can't exceed service capacity")
 
-        end_time = (datetime.combine(date_cls.min, start_time) + duration).time()
-
         schedule_match = service.schedules.filter(
             weekday=weekday,
             start_time__lte=start_time,
-            end_time__gte=end_time
+            end_time__gte=candidate_end_time
         ).exists()
-
         if not schedule_match:
             raise ValidationError("Service is closed at that time")
 
+        service_duration = service.duration
+        if duration.total_seconds() % service_duration.total_seconds() != 0:
+            raise ValidationError(f"Duration must be a multiple of service duration ({service_duration}).")
+
+        data["duration"] = duration
         return data
 
     def create(self, validated_data):
@@ -145,23 +148,23 @@ class BookingModelSerializer(ModelSerializer):
         service = validated_data["service"]
         weekday = validated_data["weekday"]
         start_time = validated_data["start_time"]
-        duration = validated_data.get("duration", service.duration)
+        duration = validated_data["duration"]
         seats = validated_data.get("seats", 1)
 
         start_dt = datetime.combine(date_cls.min, start_time)
-        end_time = (start_dt + duration).time()
+        candidate_end_time = (start_dt + duration).time()
 
         with transaction.atomic():
-            # TODO fix filter
-            # filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
             overlapping = Booking.objects.select_for_update().filter(
                 service=service,
                 weekday=weekday,
-                start_time__lt=end_time,
-                duration__gt=timedelta(0)
+                start_time__lt=candidate_end_time,
+                end_time__gt=start_time
             )
 
-            total_booked = overlapping.aggregate(total=Coalesce(Sum("seats"), 0))["total"] or 0
+            total_booked = overlapping.aggregate(
+                total=Coalesce(Sum("seats"), 0)
+            )["total"] or 0
 
             if total_booked + seats > service.capacity:
                 raise ValidationError("Not enough capacity for this time slot")

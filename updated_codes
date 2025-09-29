@@ -150,3 +150,158 @@ SERIALIZERS
 #                 seats=seats
 #             )
 #         return booking
+
+
+
+
+class BookingModelSerializer(ModelSerializer):
+    user = HiddenField(default=CurrentUserDefault())
+
+    start_time = TimeField(format='%H:%M',
+       input_formats=['%H:%M:%S.%fZ','%H:%M:%SZ','%H:%M:%S','%H:%M',],
+       allow_null=False)
+
+    class Meta:
+        model = Booking
+        fields = ("id", "service", "user", "weekday", "start_time", "duration", "seats")
+        read_only_fields = ("id", "user")
+
+    def validate_seats(self, value):
+        if value <= 0:
+            raise ValidationError("Seats must be greater than 0")
+        return value
+
+    def validate(self, data):
+        service = data["service"]
+        seats = data.get("seats", 1)
+        weekday = data["weekday"]
+        start_time = data["start_time"]
+        duration = data.get("duration", service.duration)
+        end_time = data.get("end_time", start_time + duration)
+
+        if seats > service.capacity:
+            raise ValidationError("Seats can't exceed service capacity")
+
+        schedule_match = service.schedules.filter(
+            weekday=weekday,
+            start_time__lte=start_time,
+            end_time__gte=end_time
+        ).exists()
+
+        if not schedule_match:
+            raise ValidationError("Service is closed at that time")
+
+        return data
+
+    def create(self, validated_data):
+        user = validated_data.pop("user", self.context["request"].user)
+        service = validated_data["service"]
+        weekday = validated_data["weekday"]
+        start_time = validated_data["start_time"]
+        duration = validated_data.get("duration", service.duration)
+        seats = validated_data.get("seats", 1)
+
+        start_dt = datetime.combine(date_cls.min, start_time)
+        end_time = (start_dt + duration).time()
+
+        with transaction.atomic():
+            # TODO fix filter
+            # filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
+            overlapping = Booking.objects.select_for_update().filter(
+                service=service,
+                weekday=weekday,
+                start_time__lt=end_time,
+                duration__gt=timedelta(0)
+            )
+
+            total_booked = overlapping.aggregate(total=Coalesce(Sum("seats"), 0))["total"] or 0
+
+            if total_booked + seats > service.capacity:
+                raise ValidationError("Not enough capacity for this time slot")
+
+            booking = Booking.objects.create(
+                service=service,
+                user=user,
+                weekday=weekday,
+                start_time=start_time,
+                duration=duration,
+                seats=seats
+            )
+
+        return booking
+
+
+
+VIEW
+
+
+@extend_schema(tags=['Service'])
+class ServiceRetrieveAPIView(RetrieveAPIView):
+    serializer_class = ServiceRetrieveModelSerializer
+    queryset = Service.objects.all()
+    authentication_classes = ()
+
+    def retrieve(self, request, *args, **kwargs):
+        service = get_object_or_404(
+            Service.objects.prefetch_related("schedules", "bookings"),
+            pk=self.kwargs["pk"]
+        )
+        serializer = self.get_serializer(service)
+        data = serializer.data
+
+        duration = service.duration
+        capacity = service.capacity
+
+        weekdays_data = []
+        schedules = service.schedules.all()
+
+        for schedule in schedules:
+            weekday_name = schedule.weekday
+            start_time = schedule.start_time
+            end_time = schedule.end_time
+
+            free_slots = []
+
+            current_time = datetime.combine(timezone.now().date(), start_time)
+            end_datetime = datetime.combine(timezone.now().date(), end_time)
+
+            while current_time + duration <= end_datetime:
+                slot_start = current_time.time()
+                slot_end = (current_time + duration).time()
+
+                overlapping_bookings = Booking.objects.filter(
+                    service=service,
+                    weekday=weekday_name,
+                )
+
+                total_booked = 0
+
+                for booking in overlapping_bookings:
+                    booking_end = (
+                            datetime.combine(timezone.now().date(), booking.start_time)
+                            + booking.duration
+                    ).time()
+
+                    if booking.start_time < slot_end and booking_end > slot_start:
+                        total_booked += booking.seats
+
+                available_capacity = capacity - total_booked
+
+                if available_capacity > 0:
+                    free_slots.append({
+                        "time": f"{slot_start.strftime('%H:%M')} - {slot_end.strftime('%H:%M')}",
+                        "available_capacity": available_capacity
+                    })
+
+                current_time += duration
+
+            weekdays_data.append({
+                "weekday": weekday_name,
+                "start_time": start_time.strftime("%H:%M"),
+                "end_time": end_time.strftime("%H:%M"),
+                "free_time": free_slots
+            })
+
+        data["weekday"] = weekdays_data
+
+        return Response(data)

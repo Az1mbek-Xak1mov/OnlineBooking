@@ -1,9 +1,6 @@
-import uuid
 
 import pytest
 from django.test import TestCase  # noqa
-from rest_framework import status
-from rest_framework.reverse import reverse_lazy
 
 from app.models import ServiceCategory
 

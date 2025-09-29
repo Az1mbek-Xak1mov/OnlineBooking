@@ -82,7 +82,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Services generated - {number}"))
 
-
     def _generate_bookings(self, number: int = 5):
         customers_id = list(User.objects.filter(type=User.Type.CUSTOMER).values_list('id', flat=True))
         services = list(Service.objects.all())
@@ -97,14 +96,11 @@ class Command(BaseCommand):
             weekday = random.choice(WeekdayChoices.values)
             date = timezone.localdate() + timedelta(days=random.randint(0, 14))
 
-            # Случайное время начала между 9 и 17 часами
             start_time = time(hour=random.randint(9, 17), minute=0)
 
-            # Определяем duration — кратный service.duration (например, 1x, 2x, 3x)
             multiplier = random.randint(1, 3)
             duration = service.duration * multiplier
 
-            # seats — не больше вместимости
             seats = random.randint(1, min(5, service.capacity))
 
             Booking.objects.create(
