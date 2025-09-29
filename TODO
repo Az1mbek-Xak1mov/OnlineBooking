@@ -105,7 +105,7 @@ filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
 
 11. service ni ochirish (soft delete) is_deleted=True +
 
-12. pytest
+12. pytest, github cicd (test, deploy)
 
 
 
