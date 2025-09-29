@@ -5,6 +5,7 @@ from django.db.models.fields import IntegerField
 from authentication.forms import LocationModelForm
 from .models import Location, Service, ServiceSchedule, WeekdayChoices, ServiceCategory, Booking
 
+
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     list_display = "name", "lat", "lng"

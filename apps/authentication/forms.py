@@ -1,9 +1,7 @@
-
 from django.contrib.auth.forms import AuthenticationForm
 
 from app.models import Location
 from django import forms
-
 
 
 class LeafletLocationWidget(forms.Widget):
@@ -39,7 +37,6 @@ class LocationModelForm(forms.ModelForm):
             "lat": forms.NumberInput(attrs={"step": "any"}),
             "lng": forms.NumberInput(attrs={"step": "any"}),
         }
-
 
 
 class PhoneLoginForm(AuthenticationForm):

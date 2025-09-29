@@ -1,5 +1,4 @@
 import random
-import re
 
 import orjson
 from redis import Redis
