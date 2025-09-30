@@ -42,8 +42,12 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Users generated - {number}"))
 
     def _generate_categories(self, number: int = 5):
-        for _ in range(number):
-            ServiceCategory.objects.create(name=self.faker.word().capitalize())
+        count = 0
+        while count < number:
+            name = self.faker.word().capitalize()
+            obj, created = ServiceCategory.objects.get_or_create(name=name)
+            if created:
+                count += 1
         self.stdout.write(self.style.SUCCESS(f"Categories generated - {number}"))
 
     def _generate_services(self, number: int = 5):
@@ -63,7 +67,7 @@ class Command(BaseCommand):
                 name=self.faker.company(),
                 address=self.faker.address(),
                 capacity=self.faker.random.randint(1, 20),
-                duration=timedelta(minutes=self.faker.random.choice([30, 60, 120])),
+                duration=timedelta(minutes=self.faker.random.choice([30, 60])),
                 price=self.faker.random.randint(10000, 100000),
                 description=self.faker.text(),
                 is_deleted=is_deleted

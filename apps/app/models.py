@@ -87,7 +87,7 @@ class Service(CreatedBaseModel):
     class Meta:
         constraints = [
             CheckConstraint(
-                check=RawSQL(
+                condition=RawSQL(
                     "(EXTRACT(EPOCH FROM duration) / 60)::integer %% 30 = 0 AND duration > INTERVAL '0 seconds'",
                     [],
                     output_field=BooleanField()
