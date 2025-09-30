@@ -1,10 +1,11 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from bot.const import FEEDBACK_
-from authentication.models import User
 from app.models import Demand
 from asgiref.sync import sync_to_async
+from authentication.models import User
+
+from bot.const import FEEDBACK_
 
 router = Router()
 

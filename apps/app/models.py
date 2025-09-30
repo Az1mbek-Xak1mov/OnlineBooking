@@ -1,23 +1,27 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
+from app.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
-                              CheckConstraint, DateField, DurationField,
-                              FloatField, ForeignKey, Index,
+                              CheckConstraint, DateField, DateTimeField,
+                              DurationField, FloatField, ForeignKey,
+                              ImageField, Index, OneToOneField,
                               PositiveIntegerField, TextChoices, TextField,
-                              TimeField, UniqueConstraint, OneToOneField, ImageField, DateTimeField)
+                              TimeField, UniqueConstraint)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.text import slugify
 
-from app.managers import ServiceManager, ServiceQuerySet
 from apps.shared.models import CreatedBaseModel
+
 
 def service_image_upload_to(instance, filename):
     # Use service name (slugified) if available, otherwise service id
-    base = instance.service.name if getattr(instance, "service", None) and instance.service.name else str(instance.service_id)
+    base = instance.service.name if getattr(instance, "service", None) and instance.service.name else str(
+        instance.service_id)
     base = slugify(base)
     return f"uploads/{base}/images/{filename}"
+
 
 class WeekdayChoices(TextChoices):
     MONDAY = 'monday', 'Monday'
@@ -34,6 +38,7 @@ class Location(CreatedBaseModel):
     name = CharField(max_length=100)
     lat = FloatField()
     lng = FloatField()
+
     def __str__(self):
         return self.name
 
@@ -48,6 +53,7 @@ class ServiceCategory(CreatedBaseModel):
     def __str__(self):
         return self.name
 
+
 class ServiceImage(CreatedBaseModel):
     service = ForeignKey(
         "app.Service",
@@ -56,10 +62,13 @@ class ServiceImage(CreatedBaseModel):
     )
     image = ImageField(upload_to=service_image_upload_to)
     uploaded_at = DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return f"{self.service_id} - {self.image.name}"
+
     class Meta:
         ordering = ["-uploaded_at"]
+
 
 class Service(CreatedBaseModel):
     owner = ForeignKey('authentication.User', CASCADE, limit_choices_to={'type': 'provider'},
@@ -130,6 +139,7 @@ class Booking(CreatedBaseModel):
     class StatusType(TextChoices):
         PENDING = 'pending', 'Pending'
         PASSED = 'passed', 'Passed'
+
     service = ForeignKey("app.Service", CASCADE, related_name="bookings")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     user = ForeignKey('authentication.User', CASCADE, related_name="bookings")

@@ -1,15 +1,21 @@
-from datetime import datetime, date as date_cls, time as time_cls, timedelta
-from aiogram import Router, F
+from datetime import date as date_cls
+from datetime import datetime
+from datetime import time as time_cls
+from datetime import timedelta
+
+from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from asgiref.sync import sync_to_async
-from django.utils import timezone
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.i18n import lazy_gettext as __
-from bot.const import LAST_SERVICE_, MY_ORDERS_, CATEGORY_
-from bot.buttons.inline import build_services_markup, get_free_slots, make_inline_btn_azim
-from bot.buttons.reply import main_menu_buttons
 from app.models import Booking, Service, ServiceCategory
+from asgiref.sync import sync_to_async
 from authentication.models import User
+from django.utils import timezone
+
+from bot.buttons.inline import (build_services_markup, get_free_slots,
+                                make_inline_btn_azim)
+from bot.buttons.reply import main_menu_buttons
+from bot.const import CATEGORY_, LAST_SERVICE_, MY_ORDERS_
 
 router = Router()
 

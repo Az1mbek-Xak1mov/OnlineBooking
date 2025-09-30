@@ -1,26 +1,24 @@
 from datetime import datetime, timezone
 
+from app.mixins import FilterSearchMixin
+from app.models import Booking, Service, ServiceCategory
+from app.permissions import IsProvider
+from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
+                             ServiceCategoryModelSerializer,
+                             ServiceModelSerializer,
+                             ServiceUpdateModelSerializer)
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     ListCreateAPIView, RetrieveAPIView,
-                                     get_object_or_404, DestroyAPIView, RetrieveDestroyAPIView,
-                                     RetrieveUpdateDestroyAPIView)
-from rest_framework.parsers import FileUploadParser, MultiPartParser, JSONParser
+                                     ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView,
+                                     get_object_or_404)
 from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly, AllowAny)
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-
-from app.mixins import FilterSearchMixin
-from app.models import Booking, Service, ServiceCategory, Location
-from app.permissions import IsProvider
-from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
-                             ServiceCategoryModelSerializer,
-                             ServiceModelSerializer, ServiceUpdateModelSerializer
-                             )
 from shared.filters import ServiceFilter
 from shared.paginations import CustomLimitOffsetPagination
 

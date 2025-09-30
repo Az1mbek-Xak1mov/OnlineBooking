@@ -1,4 +1,5 @@
-from . import start, auth, booking, feedback
+from . import auth, booking, feedback, start
+
 
 def register_all_handlers(dp):
     dp.include_router(start.router)

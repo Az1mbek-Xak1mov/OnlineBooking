@@ -54,6 +54,7 @@ def build_services_markup(services, category_id, page=0):
 
 from datetime import datetime, timedelta
 
+
 def get_free_slots(service, target_date):
     from app.models import Booking
     weekday_name = target_date.strftime("%A").lower()

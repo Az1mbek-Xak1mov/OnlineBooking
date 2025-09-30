@@ -1,8 +1,7 @@
 
 import pytest
-from django.test import TestCase  # noqa
-
 from app.models import ServiceCategory
+from django.test import TestCase  # noqa
 
 
 @pytest.fixture

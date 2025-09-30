@@ -1,18 +1,21 @@
-import os
 import asyncio
 import logging
+import os
 import sys
-from aiogram.utils.i18n import I18n, FSMI18nMiddleware
+
+from aiogram.utils.i18n import FSMI18nMiddleware, I18n
 from dotenv import load_dotenv
 
 load_dotenv()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 import django
+
 django.setup()
 
-from bot.loader import bot, dp
 from bot.handlers import register_all_handlers
+from bot.loader import bot, dp
+
 
 def setup_logging():
     logging.basicConfig(

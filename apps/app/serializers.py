@@ -1,14 +1,15 @@
 from datetime import date as date_cls
 from datetime import datetime
 
+from app.models import (Booking, Location, Service, ServiceCategory,
+                        ServiceImage, ServiceSchedule)
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CurrentUserDefault, HiddenField, ListField, ImageField
+from rest_framework.fields import (CurrentUserDefault, HiddenField, ImageField,
+                                   ListField)
 from rest_framework.serializers import ModelSerializer, TimeField
-
-from app.models import Booking, Service, ServiceCategory, ServiceSchedule, Location, ServiceImage
 
 
 class ServiceCategoryModelSerializer(ModelSerializer):

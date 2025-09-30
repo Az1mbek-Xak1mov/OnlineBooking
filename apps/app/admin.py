@@ -1,9 +1,10 @@
+from authentication.forms import LocationModelForm
 from django.contrib import admin
 from django.db.models import Case, When
 from django.db.models.fields import IntegerField
 
-from authentication.forms import LocationModelForm
-from .models import Location, Service, ServiceSchedule, WeekdayChoices, ServiceCategory, Booking
+from .models import (Booking, Location, Service, ServiceCategory,
+                     ServiceSchedule, WeekdayChoices)
 
 
 @admin.register(Location)
