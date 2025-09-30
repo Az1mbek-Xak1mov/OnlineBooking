@@ -71,7 +71,7 @@ class ServiceModelSerializer(ModelSerializer):
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                  "schedules", "location", "images")
+                  "schedules", "images", "location")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
