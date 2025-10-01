@@ -5,8 +5,6 @@ from datetime import timedelta
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from aiogram.utils.i18n import gettext as _
-from aiogram.utils.i18n import lazy_gettext as __
 from service.models import Booking, Service, ServiceCategory
 from asgiref.sync import sync_to_async
 from users.models import User
@@ -19,11 +17,12 @@ from bot.const import CATEGORY_, LAST_SERVICE_, MY_ORDERS_
 
 router = Router()
 
+
 @router.message(F.text == LAST_SERVICE_)
 async def last_orders(message: Message):
     user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
     if not user:
-        await message.answer("❌ You are not registered!")
+        await message.answer("❌ Siz ro‘yxatdan o‘tmagansiz!")
         return
 
     orders = await sync_to_async(lambda: list(
@@ -37,7 +36,7 @@ async def last_orders(message: Message):
             for o in orders
         ])
     else:
-        text = "You have no orders yet."
+        text = "❌ Sizda buyurtmalar yo‘q."
 
     await message.answer(text, reply_markup=main_menu_buttons())
 
@@ -47,7 +46,7 @@ async def process_orders(message: Message):
     now = timezone.localtime()
     user = await User.objects.filter(telegram_id=message.from_user.id).afirst()
     if not user:
-        await message.answer("❌ You are not registered!")
+        await message.answer("❌ Siz ro‘yxatdan o‘tmagansiz!")
         return
 
     orders = await sync_to_async(lambda: list(
@@ -57,13 +56,13 @@ async def process_orders(message: Message):
     active_orders = []
     for o in orders:
         naive_end_dt = datetime.combine(o.date, o.start_time) + o.duration
-        end_dt = timezone.make_aware(naive_end_dt)   # ✅ делаем aware
+        end_dt = timezone.make_aware(naive_end_dt)  # ✅ aware qilyapmiz
 
         if end_dt > now:
             active_orders.append((o, end_dt))
 
     if not active_orders:
-        await message.answer("You have no active orders.")
+        await message.answer("❌ Sizda faol buyurtmalar yo‘q.")
     else:
         text = "\n".join([
             f"📌 {o.service.name} | {o.date} {o.start_time.strftime('%H:%M')} - {end_dt.strftime('%H:%M')}"
@@ -71,12 +70,14 @@ async def process_orders(message: Message):
         ])
         await message.answer(text)
 
+
 @router.message(F.text == CATEGORY_)
 async def process_categories(message: Message):
     categories = await sync_to_async(lambda: list(ServiceCategory.objects.all()))()
     buttons = [i.name for i in categories]
-    await message.answer("Tugmalardan foydalaning", reply_markup=ReplyKeyboardRemove())
-    await message.answer("Kategoriyalar:", reply_markup=make_inline_btn_azim(buttons, [3]))
+    await message.answer("🔘 Tugmalardan foydalaning", reply_markup=ReplyKeyboardRemove())
+    await message.answer("📂 Kategoriyalar:", reply_markup=make_inline_btn_azim(buttons, [3]))
+
 
 @router.callback_query()
 async def process_category_callback(callback: CallbackQuery):
@@ -88,12 +89,12 @@ async def process_category_callback(callback: CallbackQuery):
         services = await sync_to_async(lambda: list(category.services.all()))()
 
         if not services:
-            await callback.message.edit_text("❌ Bu kategoriyada hozircha xizmatlar yo‘q")
+            await callback.message.edit_text("❌ Bu kategoriyada hozircha xizmatlar yo‘q.")
             return
 
         markup = build_services_markup(services, category.id, page=0)
         await callback.message.edit_text(
-            f"Siz kategoriya tanladingiz: {category.name}\nXizmatni tanlang:",
+            f"✅ Siz kategoriya tanladingiz: {category.name}\nXizmatni tanlang:",
             reply_markup=markup
         )
         await callback.answer()
@@ -126,16 +127,16 @@ async def process_category_callback(callback: CallbackQuery):
                     break
 
         if not buttons:
-            await callback.message.edit_text("❌ Нет доступных дней для этой услуги")
+            await callback.message.edit_text("❌ Bu xizmat uchun mavjud kunlar yo‘q.")
             await callback.answer()
             return
 
         markup = make_inline_btn_azim(buttons, sizes=[2], data_list=data_list)
         await callback.message.edit_text(
             f"📌 {service.name}\n"
-            f"Manzil: {service.address}\n"
-            f"Narx: {service.price}\n"
-            f"Sig‘im: {service.capacity} odam\n\n"
+            f"📍 Manzil: {service.address}\n"
+            f"💵 Narx: {service.price}\n"
+            f"👥 Sig‘im: {service.capacity} odam\n\n"
             f"👉 Quyidagi kunlardan birini tanlang:",
             reply_markup=markup
         )
@@ -147,7 +148,7 @@ async def process_category_callback(callback: CallbackQuery):
         target_date = datetime.fromisoformat(date_str).date()
         free_slots = await sync_to_async(get_free_slots)(service, target_date)
         if not free_slots:
-            await callback.message.edit_text("❌ Bu kunda bo'sh vaqt yo'q.")
+            await callback.message.edit_text("❌ Bu kunda bo‘sh vaqt yo‘q.")
             return
 
         markup = make_inline_btn_azim(
@@ -156,7 +157,7 @@ async def process_category_callback(callback: CallbackQuery):
         )
 
         await callback.message.edit_text(
-            f"📅 Mavjud slotlar {target_date.strftime('%d-%m-%Y')}:",
+            f"📅 {target_date.strftime('%d-%m-%Y')} kuni mavjud vaqtlar:",
             reply_markup=markup
         )
 
@@ -174,7 +175,7 @@ async def process_category_callback(callback: CallbackQuery):
             service=service, date=target_date, start_time=start_time
         ).aexists()
         if exists:
-            await callback.message.edit_text("❌ Afsuski, slot endigina olingan.")
+            await callback.message.edit_text("❌ Afsuski, bu vaqt endigina band qilindi.")
             return
 
         booking = Booking(
@@ -189,7 +190,7 @@ async def process_category_callback(callback: CallbackQuery):
         await booking.asave()
 
         await callback.message.edit_text(
-            f"✅ You have booked {service.name}\n"
-            f"📅 {target_date.strftime('%d-%m-%Y')}\n"
-            f"🕒 {start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
+            f"✅ Siz muvaffaqiyatli buyurtma qildingiz: {service.name}\n"
+            f"📅 Sana: {target_date.strftime('%d-%m-%Y')}\n"
+            f"🕒 Vaqt: {start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
         )
