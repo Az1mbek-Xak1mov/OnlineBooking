@@ -1,4 +1,4 @@
-from app.models import Service
+from service.models import Service
 from django_filters import (CharFilter, DateFromToRangeFilter, FilterSet,
                             NumberFilter)
 

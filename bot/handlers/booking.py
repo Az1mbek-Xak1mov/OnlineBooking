@@ -7,9 +7,9 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.i18n import lazy_gettext as __
-from app.models import Booking, Service, ServiceCategory
+from service.models import Booking, Service, ServiceCategory
 from asgiref.sync import sync_to_async
-from authentication.models import User
+from users.models import User
 from django.utils import timezone
 
 from bot.buttons.inline import (build_services_markup, get_free_slots,

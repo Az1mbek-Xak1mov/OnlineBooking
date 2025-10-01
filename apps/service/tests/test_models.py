@@ -1,6 +1,6 @@
 
 import pytest
-from app.models import ServiceCategory
+from service.models import ServiceCategory
 from django.test import TestCase  # noqa
 
 

@@ -1,4 +1,4 @@
-from authentication.forms import LocationModelForm
+from users.forms import LocationModelForm
 from django.contrib import admin
 from django.db.models import Case, When
 from django.db.models.fields import IntegerField
@@ -69,6 +69,6 @@ class ServiceModelAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = 'id', 'date', 'seats'
-    list_select_related = ['service', 'user']
+    list_select_related = ['service', 'users']
     list_filter = 'date',
     search_fields = 'user__name', 'date', 'service__name'

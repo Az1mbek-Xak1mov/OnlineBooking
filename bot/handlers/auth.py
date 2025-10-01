@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from asgiref.sync import sync_to_async
-from authentication.models import User
+from users.models import User
 
 from bot.buttons.reply import main_menu_buttons, phone_request_button
 from bot.const import ENTER_

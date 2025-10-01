@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - media_vol:/app/media
+      - media_vol:/service/media
     depends_on:
       - postgres_service
     healthcheck:

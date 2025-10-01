@@ -1,8 +1,8 @@
-from authentication.views import (CustomTokenObtainPairView,
-                                  CustomTokenRefreshView, GetMeView,
-                                  MyRequestsListAPIView, RegisterApiView,
-                                  RoleChangeCrateAPIView,
-                                  VerifyPhoneNumberAPIView)
+from users.views import (CustomTokenObtainPairView,
+                         CustomTokenRefreshView, GetMeView,
+                         MyRequestsListAPIView, RegisterApiView,
+                         RoleChangeCrateAPIView,
+                         VerifyPhoneNumberAPIView)
 from django.urls import path
 
 urlpatterns = [

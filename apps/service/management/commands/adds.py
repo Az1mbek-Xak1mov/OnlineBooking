@@ -2,9 +2,9 @@ import random
 import re
 from datetime import time, timedelta
 
-from app.models import (Booking, Service, ServiceCategory, ServiceSchedule,
-                        WeekdayChoices)
-from authentication.models import RoleChange, User
+from service.models import (Booking, Service, ServiceCategory, ServiceSchedule,
+                            WeekdayChoices)
+from users.models import RoleChange, User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from faker import Faker

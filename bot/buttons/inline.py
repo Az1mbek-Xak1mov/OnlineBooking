@@ -56,7 +56,7 @@ from datetime import datetime, timedelta
 
 
 def get_free_slots(service, target_date):
-    from app.models import Booking
+    from service.models import Booking
     weekday_name = target_date.strftime("%A").lower()
     schedules = service.schedules.filter(weekday=weekday_name)
     if not schedules.exists():

@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 
-from app.mixins import FilterSearchMixin
-from app.models import Booking, Service, ServiceCategory
-from app.permissions import IsProvider
-from app.serializers import (BookingHistorySerializer, BookingModelSerializer,
-                             ServiceCategoryModelSerializer,
-                             ServiceModelSerializer,
-                             ServiceUpdateModelSerializer)
+from service.mixins import FilterSearchMixin
+from service.models import Booking, Service, ServiceCategory
+from service.permissions import IsProvider
+from service.serializers import (BookingHistorySerializer, BookingModelSerializer,
+                                 ServiceCategoryModelSerializer,
+                                 ServiceModelSerializer,
+                                 ServiceUpdateModelSerializer)
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema

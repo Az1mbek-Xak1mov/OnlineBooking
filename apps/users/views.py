@@ -1,12 +1,12 @@
-from authentication.models import RoleChange, User
-from authentication.serializers import (CustomTokenObtainPairSerializer,
-                                        MyRequestsModelSerializer,
-                                        RoleChangeModelSerializer,
-                                        UserCreateSerializer,
-                                        UserModelSerializer,
-                                        UserRegistrationSerializer,
-                                        VerifyOtpSerializer)
-from authentication.utils import OtpService, generate_code
+from users.models import RoleChange, User
+from users.serializers import (CustomTokenObtainPairSerializer,
+                               MyRequestsModelSerializer,
+                               RoleChangeModelSerializer,
+                               UserCreateSerializer,
+                               UserModelSerializer,
+                               UserRegistrationSerializer,
+                               VerifyOtpSerializer)
+from users.utils import OtpService, generate_code
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status

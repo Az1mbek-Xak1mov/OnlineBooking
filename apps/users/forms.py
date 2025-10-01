@@ -1,5 +1,5 @@
 
-from app.models import Location
+from service.models import Location
 from django import forms
 
 

@@ -1,2 +1,2 @@
-from apps import app  # noqa
-from apps import authentication  # noqa
+from apps import service  # noqa
+from apps import users  # noqa

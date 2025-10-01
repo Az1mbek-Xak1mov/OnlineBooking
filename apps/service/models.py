@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.managers import ServiceManager, ServiceQuerySet
+from service.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               CheckConstraint, DateField, DateTimeField,
@@ -34,7 +34,7 @@ class WeekdayChoices(TextChoices):
 
 
 class Location(CreatedBaseModel):
-    service = OneToOneField('app.Service', CASCADE, related_name="location")
+    service = OneToOneField('service.Service', CASCADE, related_name="location")
     name = CharField(max_length=100)
     lat = FloatField()
     lng = FloatField()
@@ -56,7 +56,7 @@ class ServiceCategory(CreatedBaseModel):
 
 class ServiceImage(CreatedBaseModel):
     service = ForeignKey(
-        "app.Service",
+        "service.Service",
         on_delete=CASCADE,
         related_name="images"
     )
@@ -71,9 +71,9 @@ class ServiceImage(CreatedBaseModel):
 
 
 class Service(CreatedBaseModel):
-    owner = ForeignKey('authentication.User', CASCADE, limit_choices_to={'type': 'provider'},
+    owner = ForeignKey('users.User', CASCADE, limit_choices_to={'type': 'provider'},
                        related_name="services")
-    category = ForeignKey('app.ServiceCategory', SET_NULL, null=True, related_name="services")
+    category = ForeignKey('service.ServiceCategory', SET_NULL, null=True, related_name="services")
     name = CharField(max_length=255, unique=True)
     address = CharField(max_length=255)
     capacity = PositiveIntegerField(default=1)
@@ -101,7 +101,7 @@ class Service(CreatedBaseModel):
 
 
 class ServiceSchedule(CreatedBaseModel):
-    service = ForeignKey('app.Service', CASCADE, related_name="schedules")
+    service = ForeignKey('service.Service', CASCADE, related_name="schedules")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
     start_time = TimeField()
     end_time = TimeField()
@@ -140,9 +140,9 @@ class Booking(CreatedBaseModel):
         PENDING = 'pending', 'Pending'
         PASSED = 'passed', 'Passed'
 
-    service = ForeignKey("app.Service", CASCADE, related_name="bookings")
+    service = ForeignKey("service.Service", CASCADE, related_name="bookings")
     weekday = CharField(max_length=9, choices=WeekdayChoices.choices)
-    user = ForeignKey('authentication.User', CASCADE, related_name="bookings")
+    user = ForeignKey('users.User', CASCADE, related_name="bookings")
     date = DateField(blank=True, null=True)
     start_time = TimeField()
     duration = DurationField()
@@ -210,7 +210,7 @@ class Booking(CreatedBaseModel):
 
 class Demand(CreatedBaseModel):
     user = ForeignKey(
-        'authentication.User',
+        'users.User',
         CASCADE,
         related_name="demands")
     main_text = TextField(blank=True)

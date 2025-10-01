@@ -1,4 +1,4 @@
-from authentication.models.users import User
+from users.models.users import User
 
 
 class CustomerProxyUser(User):

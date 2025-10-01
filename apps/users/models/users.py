@@ -45,7 +45,7 @@ class User(AbstractUser, UUIDBaseModel):
 
 
 class RoleChange(CreatedBaseModel):
-    user = ForeignKey('authentication.User', CASCADE, related_name='role_change_requests', editable=False)
+    user = ForeignKey('users.User', CASCADE, related_name='role_change_requests', editable=False)
     message = TextField(editable=False)
     is_read = BooleanField(default=False, editable=False)
     is_accepted = BooleanField(null=True, blank=True,

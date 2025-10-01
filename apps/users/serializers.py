@@ -2,7 +2,7 @@ import re
 from random import randint  # noqa
 from typing import Any, Dict
 
-from authentication.models import RoleChange, User
+from users.models import RoleChange, User
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField, CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, Serializer
@@ -85,7 +85,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         data: Dict[str, Any] = super().validate(attrs)
-        data["user"] = {
+        data["users"] = {
             "id": self.user.id,
             "phone_number": self.user.phone_number,
             "email": self.user.email,

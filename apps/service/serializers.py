@@ -1,8 +1,8 @@
 from datetime import date as date_cls
 from datetime import datetime
 
-from app.models import (Booking, Location, Service, ServiceCategory,
-                        ServiceImage, ServiceSchedule)
+from service.models import (Booking, Location, Service, ServiceCategory,
+                            ServiceImage, ServiceSchedule)
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
@@ -152,7 +152,7 @@ class BookingModelSerializer(ModelSerializer):
         return data
 
     def create(self, validated_data):
-        user = validated_data.pop("user", self.context["request"].user)
+        user = validated_data.pop("users", self.context["request"].user)
         service = validated_data["service"]
         weekday = validated_data["weekday"]
         start_time = validated_data["start_time"]
