@@ -2,7 +2,7 @@ from users.views import (CustomTokenObtainPairView,
                          CustomTokenRefreshView, GetMeView,
                          MyRequestsListAPIView, RegisterApiView,
                          RoleChangeCrateAPIView,
-                         VerifyPhoneNumberAPIView)
+                         VerifyPhoneNumberAPIView, UserUpdateDeleteGetApiView, UsersListApiView)
 from django.urls import path
 
 urlpatterns = [
@@ -15,4 +15,6 @@ urlpatterns = [
 
     path('role-change-request/', RoleChangeCrateAPIView.as_view(), name='role-change'),
     path('my-requests/', MyRequestsListAPIView.as_view(), name='my-requests'),
+    path("users/<uuid:pk>", UserUpdateDeleteGetApiView.as_view(), name="user-detail"),
+    path("users/", UsersListApiView.as_view(), name="users"),
 ]
