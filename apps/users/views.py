@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import CreateAPIView, ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -117,10 +117,12 @@ class MyRequestsListAPIView(ListAPIView):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
 
+
 @extend_schema(tags=['User'], responses={200: UserModelSerializer})
 class UserUpdateDeleteGetApiView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
+
 
 @extend_schema(tags=['User'], responses={200: UserModelSerializer})
 class UsersListApiView(ListAPIView):
