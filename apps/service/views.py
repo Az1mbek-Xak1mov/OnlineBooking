@@ -1,4 +1,7 @@
+import json
 from datetime import datetime, timezone
+
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 
 from service.mixins import FilterSearchMixin
 from service.models import Booking, Service, ServiceCategory
@@ -51,19 +54,16 @@ class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
-
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
     pagination_class = CustomLimitOffsetPagination
     filterset_class = ServiceFilter
     search_fields = 'category', 'name', 'address', 'capacity', 'price', 'description'
 
     def create(self, request, *args, **kwargs):
-        import json
-        data = request.data.copy()
-        data["location"] = json.loads(data["location"])
 
         serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid()
-        self.perform_create(serializer)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

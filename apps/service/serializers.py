@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import (CurrentUserDefault, HiddenField, ImageField,
-                                   ListField)
+                                   ListField, JSONField)
 from rest_framework.serializers import ModelSerializer, TimeField
 
 
@@ -64,14 +64,13 @@ class LocationModelSerializer(ModelSerializer):
 
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
-    schedules = ServiceScheduleSerializer(many=True, required=False)
-    location = LocationModelSerializer(required=False)
+    location = JSONField(write_only=True)
     images = ListField(child=ImageField(), write_only=True)
 
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                  "schedules", "images", "location")
+                  "images", "location")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -79,13 +78,13 @@ class ServiceModelSerializer(ModelSerializer):
             raise ValidationError("Duration must be a positive multiple of 15 minutes.")
         return value
 
+    def validate(self, attrs):
+        return attrs
+
     def create(self, validated_data):
-        schedules_data = validated_data.pop("schedules", [])
         images_data = validated_data.pop("images", [])
-        location_data = validated_data.pop("location", [])
+        location_data = validated_data.pop("location", {})
         service = Service.objects.create(**validated_data)
-        for sch in schedules_data:
-            ServiceSchedule.objects.create(service=service, **sch)
         for img in images_data:
             ServiceImage.objects.create(service=service, image=img)
         Location.objects.create(service=service, **location_data)
@@ -93,8 +92,8 @@ class ServiceModelSerializer(ModelSerializer):
 
     def to_representation(self, instance: Service):
         to_repr = super().to_representation(instance)
-        to_repr['images'] = ServiceImageModelSerializer(instance.images.all(), many=True).data
-
+        to_repr['images'] = ServiceImageModelSerializer(instance.images.all(), many=True, context=self.context).data
+        to_repr['key'] = 'vali'
         return to_repr
 
 
