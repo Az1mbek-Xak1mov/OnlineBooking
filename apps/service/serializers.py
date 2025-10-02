@@ -1,3 +1,4 @@
+import json
 from datetime import date as date_cls
 from datetime import datetime
 
@@ -59,12 +60,12 @@ class ServiceImageModelSerializer(ModelSerializer):
 class LocationModelSerializer(ModelSerializer):
     class Meta:
         model = Location
-        fields = "lat", "lng", "name"
+        fields = ('lat' ,'lng' , 'name')
 
 
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
-    location = JSONField(write_only=True)
+    location = LocationModelSerializer(required=False)
     images = ListField(child=ImageField(), write_only=True)
 
     class Meta:
@@ -83,11 +84,21 @@ class ServiceModelSerializer(ModelSerializer):
 
     def create(self, validated_data):
         images_data = validated_data.pop("images", [])
-        location_data = validated_data.pop("location", {})
+        location_data = validated_data.pop("location", None)
+
+        if not location_data:
+            raw_loc = self.initial_data.get('location')
+            if raw_loc and isinstance(raw_loc, str):
+                try:
+                    location_data = json.loads(raw_loc)
+                except Exception:
+                    location_data = {}
+
         service = Service.objects.create(**validated_data)
         for img in images_data:
             ServiceImage.objects.create(service=service, image=img)
-        Location.objects.create(service=service, **location_data)
+        if location_data:
+            Location.objects.create(service=service, **location_data)
         return service
 
     def to_representation(self, instance: Service):

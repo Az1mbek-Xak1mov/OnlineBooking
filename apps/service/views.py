@@ -47,28 +47,15 @@ class MyServicesListApiView(ListAPIView):
 
         return qs.filter(owner=self.request.user)
 
-
 @extend_schema(tags=['Service'])
 class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
-    parser_classes = [JSONParser, FormParser, MultiPartParser]
+
     pagination_class = CustomLimitOffsetPagination
     filterset_class = ServiceFilter
     search_fields = 'category', 'name', 'address', 'capacity', 'price', 'description'
-
-    def create(self, request, *args, **kwargs):
-
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def get_queryset(self):
-        print(self.request.user)
-        return super().get_queryset()
 
 
 @extend_schema(tags=["Service"])
