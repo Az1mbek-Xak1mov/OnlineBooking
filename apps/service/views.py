@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timezone
 
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
@@ -41,7 +40,7 @@ class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
 class MyServicesListApiView(ListAPIView):
     serializer_class = ServiceModelSerializer
     queryset = Service.objects.all()
-    permission_classes = IsProvider,
+    permission_classes = IsProvider,IsAuthenticated
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -170,6 +169,8 @@ class PendingBookingListAPIView(ListAPIView):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if not self.request.user.is_authenticated:
+            return Booking.objects.none()
         return qs.filter(status=Booking.StatusType.PENDING, user=self.request.user)
 
 

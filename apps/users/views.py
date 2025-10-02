@@ -148,6 +148,7 @@ class MyRequestsListAPIView(ListAPIView):
 class UserUpdateDeleteGetApiView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
+    permission_classes = [IsAuthenticated]
 
 
 @extend_schema(tags=['User'], responses={200: UserModelSerializer})
