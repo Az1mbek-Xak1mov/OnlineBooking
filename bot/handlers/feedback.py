@@ -2,7 +2,6 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from service.models import Demand
-from asgiref.sync import sync_to_async
 from users.models import User
 
 from bot.const import FEEDBACK_

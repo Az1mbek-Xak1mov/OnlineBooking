@@ -1,4 +1,7 @@
 from math import ceil
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from datetime import datetime, timedelta
 
 
 def make_inline_btn(btns: list, size: list, repeat=False):
@@ -9,9 +12,6 @@ def make_inline_btn(btns: list, size: list, repeat=False):
     else:
         rkb.adjust(*size)
     return rkb.as_markup()
-
-from aiogram.types import InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 def make_inline_btn_azim(btns, sizes, data_list=None):
@@ -25,6 +25,7 @@ def make_inline_btn_azim(btns, sizes, data_list=None):
 
 
 SERVICES_PER_PAGE = 6
+
 
 def build_services_markup(services, category_id, page=0):
     total = len(services)
@@ -51,8 +52,6 @@ def build_services_markup(services, category_id, page=0):
     if nav_buttons:
         builder.row(*nav_buttons)
     return builder.as_markup()
-
-from datetime import datetime, timedelta
 
 
 def get_free_slots(service, target_date):
@@ -82,8 +81,7 @@ def get_free_slots(service, target_date):
             free_seats = max(service.capacity - booked_count, 0)
 
             if free_seats > 0:
-                free_slots.append(f"{slot_start.strftime('%H:%M')} - {slot_end.strftime('%H:%M')} ({free_seats} places)")
-
+                free_slots.append(f"{slot_start.strftime('%H:%M')}-{slot_end.strftime('%H:%M')} ({free_seats} places)")
             current += duration
 
     return free_slots
