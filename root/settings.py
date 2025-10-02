@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'rest_framework_simplejwt',
     'django_filters',
+
 ]
 
 MIDDLEWARE = [
@@ -117,7 +118,8 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-STATIC_ROOT = join(BASE_DIR,'static')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [ BASE_DIR / 'static' ]
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = join(BASE_DIR,'media')

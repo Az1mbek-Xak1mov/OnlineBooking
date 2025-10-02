@@ -45,7 +45,8 @@ class Command(BaseCommand):
         count = 0
         while count < number:
             name = self.faker.word().capitalize()
-            obj, created = ServiceCategory.objects.get_or_create(name=name)
+            icon = self.faker.image_url()
+            obj, created = ServiceCategory.objects.get_or_create(name=name , icon=icon)
             if created:
                 count += 1
         self.stdout.write(self.style.SUCCESS(f"Categories generated - {number}"))

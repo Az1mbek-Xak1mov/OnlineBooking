@@ -7,7 +7,7 @@ from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               DurationField, FloatField, ForeignKey,
                               ImageField, Index, OneToOneField,
                               PositiveIntegerField, TextChoices, TextField,
-                              TimeField, UniqueConstraint)
+                              TimeField, UniqueConstraint, URLField)
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.text import slugify
@@ -45,7 +45,7 @@ class Location(CreatedBaseModel):
 
 class ServiceCategory(CreatedBaseModel):
     name = CharField(max_length=255, unique=True)
-
+    icon = URLField()
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'

@@ -94,7 +94,6 @@ filter(start_time__gte=booking_start_time, end_time__lt=booking_start_time)
 
 
 
-
 7. barcha apilarga filter, search, pagination qoshish +
 
 8. adminkadan ozining vaqtlarini belgilab qoyish (misol sartarosh dushanba 8:00 dan 18:00 gacha)
