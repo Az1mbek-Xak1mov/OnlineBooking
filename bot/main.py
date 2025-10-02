@@ -2,10 +2,12 @@ import asyncio
 import logging
 import os
 import sys
+
 import django
-from bot.loader import bot, dp
-from bot.handlers import register_all_handlers
 from dotenv import load_dotenv
+
+from bot.handlers import register_all_handlers
+from bot.loader import bot, dp
 
 load_dotenv()
 

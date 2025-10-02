@@ -1,7 +1,8 @@
+from datetime import datetime, timedelta
 from math import ceil
+
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from datetime import datetime, timedelta
 
 
 def make_inline_btn(btns: list, size: list, repeat=False):

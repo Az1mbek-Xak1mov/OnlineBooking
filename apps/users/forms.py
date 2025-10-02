@@ -1,6 +1,6 @@
 
-from service.models import Location
 from django import forms
+from service.models import Location
 
 
 class LeafletLocationWidget(forms.Widget):

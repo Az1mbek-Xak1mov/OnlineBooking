@@ -5,10 +5,10 @@ from datetime import timedelta
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from service.models import Booking, Service, ServiceCategory
 from asgiref.sync import sync_to_async
-from users.models import User
 from django.utils import timezone
+from service.models import Booking, Service, ServiceCategory
+from users.models import User
 
 from bot.buttons.inline import (build_services_markup, get_free_slots,
                                 make_inline_btn_azim)

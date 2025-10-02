@@ -1,6 +1,6 @@
-from service.models import Service
 from django_filters import (CharFilter, DateFromToRangeFilter, FilterSet,
                             NumberFilter)
+from service.models import Service
 
 
 class ServiceFilter(FilterSet):

@@ -1,26 +1,24 @@
 from django.shortcuts import redirect
-from users.models import RoleChange, User
-from users.serializers import (CustomTokenObtainPairSerializer,
-                               MyRequestsModelSerializer,
-                               RoleChangeModelSerializer,
-                               UserCreateSerializer,
-                               UserModelSerializer,
-                               UserRegistrationSerializer,
-                               VerifyOtpSerializer)
-from users.utils import OtpService, generate_code
+from django.views.generic import TemplateView
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (CreateAPIView, ListAPIView,
+                                     RetrieveUpdateDestroyAPIView)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 from shared.paginations import CustomLimitOffsetPagination
-from django.views.generic import TemplateView
-
+from users.models import RoleChange, User
+from users.serializers import (CustomTokenObtainPairSerializer,
+                               MyRequestsModelSerializer,
+                               RoleChangeModelSerializer, UserCreateSerializer,
+                               UserModelSerializer, UserRegistrationSerializer,
+                               VerifyOtpSerializer)
+from users.utils import OtpService, generate_code
 
 
 @extend_schema(tags=['Auth'])
@@ -81,7 +79,7 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
 
 
 @extend_schema(tags=['Auth'])
-class CustomTokenObtainPairView(TokenObtainPairView,TemplateView):
+class CustomTokenObtainPairView(TokenObtainPairView, TemplateView):
     serializer_class = CustomTokenObtainPairSerializer
     template_name = "login.html"
 
@@ -107,6 +105,7 @@ class CustomTokenObtainPairView(TokenObtainPairView,TemplateView):
         response.set_cookie('access', tokens.get('access'), httponly=False, samesite='Lax')
         response.set_cookie('refresh', tokens.get('refresh'), httponly=True, samesite='Lax')
         return response
+
 
 @extend_schema(tags=['Auth'])
 class CustomTokenRefreshView(TokenRefreshView):

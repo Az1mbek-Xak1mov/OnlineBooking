@@ -1,7 +1,7 @@
-from users.forms import LocationModelForm
 from django.contrib import admin
 from django.db.models import Case, When
 from django.db.models.fields import IntegerField
+from users.forms import LocationModelForm
 
 from .models import (Booking, Location, Service, ServiceCategory,
                      ServiceSchedule, WeekdayChoices)

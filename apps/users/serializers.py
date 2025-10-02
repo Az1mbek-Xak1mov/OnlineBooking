@@ -2,11 +2,11 @@ import re
 from random import randint  # noqa
 from typing import Any, Dict
 
-from users.models import RoleChange, User
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField, CurrentUserDefault, HiddenField
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from users.models import RoleChange, User
 
 
 class UserRegistrationSerializer(ModelSerializer):
@@ -41,7 +41,7 @@ class UserRegistrationSerializer(ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
+        # password = validated_data.pop('password')
         user = User.objects.create_user(**validated_data)
         return user
 

@@ -5,7 +5,6 @@ import pytest
 from django.test import TestCase  # noqa
 from rest_framework import status
 from rest_framework.reverse import reverse_lazy
-
 from service.models import Service
 from users.models import User
 
