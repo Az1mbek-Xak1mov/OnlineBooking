@@ -81,32 +81,8 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
 
 
 @extend_schema(tags=['Auth'])
-class CustomTokenObtainPairView(TokenObtainPairView,TemplateView):
+class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    template_name = "login.html"
-
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response({})
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception:
-            errors = serializer.errors
-            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
-                return self.render_to_response({'errors': errors}, status=400)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-        tokens = serializer.validated_data
-
-        if 'application/json' in request.META.get('HTTP_ACCEPT', '') or request.content_type == 'application/json':
-            return Response(tokens, status=status.HTTP_200_OK)
-
-        response = redirect('/')
-        response.set_cookie('access', tokens.get('access'), httponly=False, samesite='Lax')
-        response.set_cookie('refresh', tokens.get('refresh'), httponly=True, samesite='Lax')
-        return response
 
 @extend_schema(tags=['Auth'])
 class CustomTokenRefreshView(TokenRefreshView):
