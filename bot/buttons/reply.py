@@ -31,6 +31,7 @@ def main_menu_buttons():
     rows = [2, 2]
     return make_reply(buttons, rows)
 
+
 def phone_request_button():
     kb = ReplyKeyboardMarkup(
         keyboard=[
