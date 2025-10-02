@@ -55,3 +55,6 @@ class RoleChange(CreatedBaseModel):
         verbose_name = 'Change Role Request'
         verbose_name_plural = 'Change Role Requests'
         ordering = ['-created_at', '-is_read']
+
+    def __str__(self):
+        return f"{self.user.phone_number} - {self.message}"
