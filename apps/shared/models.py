@@ -24,4 +24,3 @@ class CreatedBaseModel(UUIDBaseModel):
         abstract = True
 
 
-print(1)

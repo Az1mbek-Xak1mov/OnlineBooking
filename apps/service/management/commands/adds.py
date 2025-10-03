@@ -2,12 +2,12 @@ import random
 import re
 from datetime import time, timedelta
 
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from faker import Faker
 from service.models import (Booking, Service, ServiceCategory, ServiceSchedule,
                             WeekdayChoices)
 from users.models import RoleChange, User
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from faker import Faker
 
 
 class Command(BaseCommand):
@@ -155,6 +155,3 @@ class Command(BaseCommand):
                 getattr(self, f"_generate_{_name}")()
             else:
                 getattr(self, f"_generate_{_name}")(kwargs[_name])
-
-
-print(1)

@@ -4,6 +4,3 @@ from rest_framework.filters import SearchFilter
 
 class FilterSearchMixin:
     filter_backends = (DjangoFilterBackend, SearchFilter)
-
-
-print(1)

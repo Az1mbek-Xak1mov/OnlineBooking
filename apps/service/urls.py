@@ -1,10 +1,8 @@
-from django.urls import path
 from service.views import (BookingCreateAPIView, MyServicesListApiView,
-                           PendingBookingListAPIView,
-                           ServiceCategoryListAPIView,
-                           ServiceDeleteUpdateGetAPIView,
-                           ServiceListCreateAPIView,
+                           PendingBookingListAPIView, ServiceCategoryListAPIView,
+                           ServiceDeleteUpdateGetAPIView, ServiceListCreateAPIView,
                            UserBookingHistoryListAPIView)
+from django.urls import path
 
 urlpatterns = [
     path("category/services/", ServiceCategoryListAPIView.as_view(), name="service-category-list"),
@@ -20,4 +18,3 @@ urlpatterns = [
 ]
 
 
-print(1)

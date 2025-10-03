@@ -151,4 +151,3 @@ class TestMyRequestsModelSerializer:
         assert data["user"] == role_change.user.id
 
 
-print(1)

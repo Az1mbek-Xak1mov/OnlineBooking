@@ -6,4 +6,3 @@ class CustomLimitOffsetPagination(LimitOffsetPagination):
     max_limit = 100
 
 
-print(1)

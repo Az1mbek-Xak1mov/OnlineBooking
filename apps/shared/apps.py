@@ -6,4 +6,3 @@ class SharedConfig(AppConfig):
     name = 'shared'
 
 
-print(1)

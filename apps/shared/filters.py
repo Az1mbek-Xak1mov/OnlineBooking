@@ -14,4 +14,3 @@ class ServiceFilter(FilterSet):
         fields = ["category", "min_price", "max_price", "created_at"]
 
 
-print(1)

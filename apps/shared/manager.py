@@ -23,4 +23,3 @@ class CustomUserManager(UserManager):
         return self.create_user(phone_number, password, **extra_fields)
 
 
-print(1)

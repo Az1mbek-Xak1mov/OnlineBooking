@@ -6,4 +6,3 @@ urlpatterns = [
 ]
 
 
-print(1)

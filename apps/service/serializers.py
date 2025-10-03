@@ -60,18 +60,19 @@ class ServiceImageModelSerializer(ModelSerializer):
 class LocationModelSerializer(ModelSerializer):
     class Meta:
         model = Location
-        fields = ('lat' ,'lng' , 'name')
+        fields = ('lat', 'lng', 'name')
 
 
 class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     location = LocationModelSerializer(required=False)
     images = ListField(child=ImageField(), write_only=True)
+    schedules = ServiceScheduleSerializer(many=True , required=False)
 
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                  "images", "location")
+                  "images", "location","schedules")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -85,6 +86,7 @@ class ServiceModelSerializer(ModelSerializer):
     def create(self, validated_data):
         images_data = validated_data.pop("images", [])
         location_data = validated_data.pop("location", None)
+        schedules_data = validated_data.pop("schedules",  [])
 
         if not location_data:
             raw_loc = self.initial_data.get('location')
@@ -93,10 +95,58 @@ class ServiceModelSerializer(ModelSerializer):
                     location_data = json.loads(raw_loc)
                 except Exception:
                     location_data = {}
-
+        if not schedules_data:
+            raw_schedules = self.initial_data.get('schedules')
+            print(raw_schedules, type(raw_schedules))
+            if raw_schedules and isinstance(raw_schedules, str):
+                print(len(raw_schedules))
+                s = raw_schedules.strip()
+                try:
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        schedules_data = parsed
+                    elif isinstance(parsed, dict):
+                        schedules_data = [parsed]
+                    else:
+                        schedules_data = []
+                except Exception:
+                    try:
+                        parsed = json.loads(f'[{s}]')
+                        if isinstance(parsed, list):
+                            schedules_data = parsed
+                        else:
+                            schedules_data = []
+                    except Exception:
+                        schedules_data = []
+                        if '},{' in s:
+                            parts = s.split('},{')
+                            for i, part in enumerate(parts):
+                                if i == 0:
+                                    candidate = part + '}'
+                                elif i == len(parts) - 1:
+                                    candidate = '{' + part
+                                else:
+                                    candidate = '{' + part + '}'
+                                try:
+                                    schedules_data.append(json.loads(candidate))
+                                except Exception:
+                                    pass
+                        if not schedules_data:
+                            for line in s.splitlines():
+                                line = line.strip().rstrip(',')
+                                if not line:
+                                    continue
+                                try:
+                                    schedules_data.append(json.loads(line))
+                                except Exception:
+                                    continue
+                        if not schedules_data:
+                            schedules_data = []
         service = Service.objects.create(**validated_data)
         for img in images_data:
             ServiceImage.objects.create(service=service, image=img)
+        for sch in schedules_data:
+            ServiceSchedule.objects.create(service=service, **sch)
         if location_data:
             Location.objects.create(service=service, **location_data)
         return service
@@ -200,10 +250,6 @@ class BookingModelSerializer(ModelSerializer):
 
 
 class ServiceUpdateModelSerializer(ModelSerializer):
-
     class Meta:
         model = Service
         fields = ("id", "name", 'duration', "price", "description", "address", "capacity", "category",)
-
-
-print(1)

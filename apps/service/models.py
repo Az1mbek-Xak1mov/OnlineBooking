@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from service.managers import ServiceManager, ServiceQuerySet
 from django.core.exceptions import ValidationError
 from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
                               CheckConstraint, DateField, DateTimeField,
@@ -10,7 +11,6 @@ from django.db.models import (CASCADE, SET_NULL, BooleanField, CharField,
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.text import slugify
-from service.managers import ServiceManager, ServiceQuerySet
 
 from apps.shared.models import CreatedBaseModel
 
@@ -46,7 +46,6 @@ class Location(CreatedBaseModel):
 class ServiceCategory(CreatedBaseModel):
     name = CharField(max_length=255, unique=True)
     icon = URLField()
-
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -217,4 +216,3 @@ class Demand(CreatedBaseModel):
     main_text = TextField(blank=True)
 
 
-print(1)

@@ -5,6 +5,7 @@ import pytest
 from django.test import TestCase  # noqa
 from rest_framework import status
 from rest_framework.reverse import reverse_lazy
+
 from service.models import Service
 from users.models import User
 
@@ -318,5 +319,3 @@ def test_users_booking_history_url(client):
     assert response.request['REQUEST_METHOD'] == 'POST'
     assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_405_METHOD_NOT_ALLOWED]
 
-
-print(1)

@@ -1,11 +1,11 @@
-from datetime import datetime, time, timedelta
+from datetime import time, timedelta, datetime
 
 import pytest
 from django.core.exceptions import ValidationError
 from django.test import TestCase  # noqa
-from service.models import (Booking, Location, Service, ServiceCategory,
-                            ServiceImage, ServiceSchedule)
-from users.models import RoleChange, User
+
+from service.models import ServiceCategory, Service, ServiceImage, Location, ServiceSchedule, Booking
+from users.models import User, RoleChange
 
 
 @pytest.mark.django_db
@@ -122,7 +122,8 @@ class TestServiceModels:
 
     @pytest.fixture
     def user(self):
-        return User.objects.create_user(phone_number='998123456789', password='1', type=User.Type.PROVIDER)
+        phone = f"998123456789"
+        return User.objects.create_user(phone_number=phone, password='1', type=User.Type.PROVIDER)
 
     @pytest.fixture
     def category(self, user):
@@ -210,4 +211,3 @@ class TestServiceModels:
         assert service.category == category
 
 
-print(1)
