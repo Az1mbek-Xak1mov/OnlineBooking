@@ -19,7 +19,6 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 from shared.paginations import CustomLimitOffsetPagination
-from django.views.generic import TemplateView
 
 
 @extend_schema(tags=['Auth'])
@@ -134,9 +133,4 @@ class UsersListApiView(ListAPIView):
     permission_classes = [IsModerator, IsAdmin]
 
 
-class UserCountAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
 
-    def get(self, request, *args, **kwargs):
-        total = User.objects.count()
-        return Response({"count": total})

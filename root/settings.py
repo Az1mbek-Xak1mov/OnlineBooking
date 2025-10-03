@@ -29,7 +29,8 @@ INSTALLED_APPS = [
     # My Apps
     'service',
     'users',
-
+    'stats',
+    
     # Third-party Apps
     'rest_framework',
     'drf_spectacular',
