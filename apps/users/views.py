@@ -1,4 +1,6 @@
 from django.shortcuts import redirect
+
+from service.permissions import IsAdmin, IsModerator
 from users.models import RoleChange, User
 from users.serializers import (CustomTokenObtainPairSerializer,
                                MyRequestsModelSerializer,
@@ -131,3 +133,4 @@ class UserUpdateDeleteGetApiView(RetrieveUpdateDestroyAPIView):
 class UsersListApiView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
+    permission_classes = [IsModerator, IsAdmin]

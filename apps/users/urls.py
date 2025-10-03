@@ -1,9 +1,8 @@
-from users.views import (CustomTokenObtainPairView,
-                         CustomTokenRefreshView, GetMeView,
-                         MyRequestsListAPIView, RegisterApiView,
-                         RoleChangeCrateAPIView,
-                         VerifyPhoneNumberAPIView, UserUpdateDeleteGetApiView, UsersListApiView)
 from django.urls import path
+from users.views import (CustomTokenObtainPairView, CustomTokenRefreshView,
+                         GetMeView, MyRequestsListAPIView, RegisterApiView,
+                         RoleChangeCrateAPIView, UsersListApiView,
+                         UserUpdateDeleteGetApiView, VerifyPhoneNumberAPIView)
 
 urlpatterns = [
     path('registration/', RegisterApiView.as_view(), name='register'),
