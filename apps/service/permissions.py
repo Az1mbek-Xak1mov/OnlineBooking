@@ -19,3 +19,6 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view) -> bool:
         user = request.user
         return user and user.is_authenticated and user.is_admin
+
+
+print(1)

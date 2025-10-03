@@ -22,3 +22,6 @@ class CreatedBaseModel(UUIDBaseModel):
 
     class Meta:
         abstract = True
+
+
+print(1)

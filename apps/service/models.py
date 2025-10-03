@@ -215,3 +215,6 @@ class Demand(CreatedBaseModel):
         CASCADE,
         related_name="demands")
     main_text = TextField(blank=True)
+
+
+print(1)

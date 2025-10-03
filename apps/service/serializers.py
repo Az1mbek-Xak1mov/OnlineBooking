@@ -203,5 +203,7 @@ class ServiceUpdateModelSerializer(ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ("id", "name", 'duration', "price", "description", "address", "capacity", "category",
-                  "schedules", "location")
+        fields = ("id", "name", 'duration', "price", "description", "address", "capacity", "category",)
+
+
+print(1)

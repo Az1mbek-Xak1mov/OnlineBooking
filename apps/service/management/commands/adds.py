@@ -157,3 +157,4 @@ class Command(BaseCommand):
                 getattr(self, f"_generate_{_name}")(kwargs[_name])
 
 
+print(1)

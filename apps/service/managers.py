@@ -15,3 +15,7 @@ class ServiceManager(Manager):
 
     def all_with_deleted(self):
         return super().get_queryset()
+
+
+
+print(1)
