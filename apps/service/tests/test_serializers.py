@@ -149,3 +149,6 @@ class TestMyRequestsModelSerializer:
         data = serializer.data
         assert data["message"] == "Request 1"
         assert data["user"] == role_change.user.id
+
+
+print(1)

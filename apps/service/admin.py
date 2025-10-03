@@ -72,3 +72,6 @@ class BookingAdmin(admin.ModelAdmin):
     list_select_related = ['service', 'users']
     list_filter = 'date',
     search_fields = 'user__name', 'date', 'service__name'
+
+
+print(1)
