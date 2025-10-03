@@ -61,7 +61,7 @@ class RoleChangeAdmin(admin.ModelAdmin):
     list_filter = ("is_read", "is_accepted", "created_at")
     search_fields = ("user__phone_number", "user__first_name", "user__last_name", "message")
     ordering = ("is_read", "-created_at")
-    actions = ["mark_as_read", "accept_requests"]
+    actions = ["mark_as_read"]
 
     def get_object(self, request, object_id, from_field=None):
         obj = super().get_object(request, object_id, from_field)
@@ -73,23 +73,17 @@ class RoleChangeAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
+        if obj.is_accepted and obj.user.type != User.Type.PROVIDER:
+            User.objects.filter(id=obj.user.id).update(type=User.Type.PROVIDER)
+
     @admin.action(description="Mark selected requests as read")
     def mark_as_read(self, request, queryset):
         count = queryset.update(is_read=True)
         self.message_user(request, f"{count} request(s) marked as read ✅")
 
-    @admin.action(description="Accept selected requests and set role = Provider")
-    def accept_requests(self, request, queryset):
-        for r in queryset.filter(is_accepted__isnull=True):
-            r.is_accepted, r.is_read = True, True
-            r.save(update_fields=["is_accepted", "is_read"])
-
-            if r.user.type != User.Type.PROVIDER:
-                r.user.type = User.Type.PROVIDER
-                r.user.save(update_fields=["type"])
-        self.message_user(request, "Selected requests accepted")
-
     def short_message(self, obj):
+        if not obj.message:
+            return ""
         return f"{obj.message[:30]}..." if len(obj.message) > 30 else obj.message
 
     short_message.short_description = "Message"
