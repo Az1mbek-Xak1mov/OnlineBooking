@@ -1,24 +1,26 @@
 from django.shortcuts import redirect
-from django.views.generic import TemplateView
+from users.models import RoleChange, User
+from users.serializers import (CustomTokenObtainPairSerializer,
+                               MyRequestsModelSerializer,
+                               RoleChangeModelSerializer,
+                               UserCreateSerializer,
+                               UserModelSerializer,
+                               UserRegistrationSerializer,
+                               VerifyOtpSerializer)
+from users.utils import OtpService, generate_code
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     RetrieveUpdateDestroyAPIView)
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 from shared.paginations import CustomLimitOffsetPagination
-from users.models import RoleChange, User
-from users.serializers import (CustomTokenObtainPairSerializer,
-                               MyRequestsModelSerializer,
-                               RoleChangeModelSerializer, UserCreateSerializer,
-                               UserModelSerializer, UserRegistrationSerializer,
-                               VerifyOtpSerializer)
-from users.utils import OtpService, generate_code
+from django.views.generic import TemplateView
+
 
 
 @extend_schema(tags=['Auth'])
@@ -79,33 +81,8 @@ class VerifyPhoneNumberAPIView(CreateAPIView):
 
 
 @extend_schema(tags=['Auth'])
-class CustomTokenObtainPairView(TokenObtainPairView, TemplateView):
+class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    template_name = "login.html"
-
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response({})
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception:
-            errors = serializer.errors
-            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
-                return self.render_to_response({'errors': errors}, status=400)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-        tokens = serializer.validated_data
-
-        if 'application/json' in request.META.get('HTTP_ACCEPT', '') or request.content_type == 'application/json':
-            return Response(tokens, status=status.HTTP_200_OK)
-
-        response = redirect('/')
-        response.set_cookie('access', tokens.get('access'), httponly=False, samesite='Lax')
-        response.set_cookie('refresh', tokens.get('refresh'), httponly=True, samesite='Lax')
-        return response
-
 
 @extend_schema(tags=['Auth'])
 class CustomTokenRefreshView(TokenRefreshView):

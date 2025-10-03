@@ -1,6 +1,16 @@
 from datetime import datetime, timezone
 
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+
+from service.mixins import FilterSearchMixin
+from service.models import Booking, Service, ServiceCategory
+from service.permissions import IsProvider
+from service.serializers import (BookingHistorySerializer, BookingModelSerializer,
+                                 ServiceCategoryModelSerializer,
+                                 ServiceModelSerializer,
+                                 ServiceUpdateModelSerializer)
 from django.db.models.aggregates import Sum
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -8,18 +18,9 @@ from rest_framework.generics import (CreateAPIView, ListAPIView,
                                      ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      get_object_or_404)
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-from service.mixins import FilterSearchMixin
-from service.models import Booking, Service, ServiceCategory
-from service.permissions import IsProvider
-from service.serializers import (BookingHistorySerializer,
-                                 BookingModelSerializer,
-                                 ServiceCategoryModelSerializer,
-                                 ServiceModelSerializer,
-                                 ServiceUpdateModelSerializer)
 from shared.filters import ServiceFilter
 from shared.paginations import CustomLimitOffsetPagination
 
@@ -39,34 +40,22 @@ class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
 class MyServicesListApiView(ListAPIView):
     serializer_class = ServiceModelSerializer
     queryset = Service.objects.all()
-    permission_classes = IsProvider, IsAuthenticated
+    permission_classes = IsProvider,IsAuthenticated
 
     def get_queryset(self):
         qs = super().get_queryset()
 
         return qs.filter(owner=self.request.user)
 
-
 @extend_schema(tags=['Service'])
 class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
     queryset = Service.objects.select_related("owner", "category")
     serializer_class = ServiceModelSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsProvider]
-    parser_classes = [JSONParser, FormParser, MultiPartParser]
+
     pagination_class = CustomLimitOffsetPagination
     filterset_class = ServiceFilter
     search_fields = 'category', 'name', 'address', 'capacity', 'price', 'description'
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def get_queryset(self):
-        print(self.request.user)
-        return super().get_queryset()
 
 
 @extend_schema(tags=["Service"])
