@@ -200,12 +200,8 @@ class BookingModelSerializer(ModelSerializer):
 
 
 class ServiceUpdateModelSerializer(ModelSerializer):
-    owner = HiddenField(default=CurrentUserDefault())
-    schedules = ServiceScheduleSerializer(many=True, required=False)
-    location = LocationModelSerializer()
 
     class Meta:
         model = Service
-        fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
+        fields = ("id", "name", 'duration', "price", "description", "address", "capacity", "category",
                   "schedules", "location")
-        read_only_fields = "id",

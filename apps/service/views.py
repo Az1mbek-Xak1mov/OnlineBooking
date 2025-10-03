@@ -63,11 +63,27 @@ class ServiceDeleteUpdateGetAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ServiceUpdateModelSerializer
     permission_classes = (IsProvider,)
 
+    def get_queryset(self):
+        # only non-deleted services
+        return Service.objects.filter(is_deleted=False)
+
+    def get_object(self):
+        # centralize lookup + ownership check
+        qs = self.get_queryset().prefetch_related("schedules", "bookings")
+        obj = get_object_or_404(qs, pk=self.kwargs["pk"])
+
+        # check ownership
+        if obj.owner_id != self.request.user.id:
+            # Option A: raise PermissionDenied (403)
+            raise PermissionDenied("You do not have permission to access this service.")
+            # Option B (preferred in some APIs for privacy): raise Http404()
+            # from django.http import Http404
+            # raise Http404
+
+        return obj
+
     def retrieve(self, request, *args, **kwargs):
-        service = get_object_or_404(
-            Service.objects.prefetch_related("schedules", "bookings"),
-            pk=self.kwargs["pk"]
-        )
+        service = self.get_object()
         serializer = self.get_serializer(service)
         data = serializer.data
 
@@ -118,19 +134,18 @@ class ServiceDeleteUpdateGetAPIView(RetrieveUpdateDestroyAPIView):
         data["weekday"] = weekdays_data
         return Response(data)
 
-    def get_queryset(self):
-        return Service.objects.filter(is_deleted=False)
-
-    def perform_update(self, instance):
-        user = self.request.user
-        if instance.owner != user:
+    def perform_update(self, serializer):
+        # ensure owner before saving (get_object() will raise if not owner)
+        instance = self.get_object()
+        # if you want an explicit check:
+        if instance.owner_id != self.request.user.id:
             raise PermissionDenied("You do not have permission to update this service.")
+        serializer.save()
 
     def perform_destroy(self, instance):
-        user = self.request.user
-        if instance.owner != user:
+        # ensure owner before deleting (delete() calls get_object() so this is extra-safe)
+        if instance.owner_id != self.request.user.id:
             raise PermissionDenied("You do not have permission to delete this service.")
-
         instance.is_deleted = True
         instance.save(update_fields=["is_deleted"])
 
@@ -141,6 +156,7 @@ class ServiceDeleteUpdateGetAPIView(RetrieveUpdateDestroyAPIView):
             {"detail": f"Service '{instance.name}' successfully marked as deleted."},
             status=status.HTTP_200_OK
         )
+
 
 
 @extend_schema(tags=['Booking'])
