@@ -2,7 +2,7 @@ from django.urls import path
 from users.views import (CustomTokenObtainPairView, CustomTokenRefreshView,
                          GetMeView, MyRequestsListAPIView, RegisterApiView,
                          RoleChangeCrateAPIView, UsersListApiView,
-                         UserUpdateDeleteGetApiView, VerifyPhoneNumberAPIView)
+                         UserUpdateDeleteGetApiView, VerifyPhoneNumberAPIView, UserCountAPIView)
 
 urlpatterns = [
     path('registration/', RegisterApiView.as_view(), name='register'),
@@ -16,4 +16,5 @@ urlpatterns = [
     path('my-requests/', MyRequestsListAPIView.as_view(), name='my-requests'),
     path("users/<uuid:pk>", UserUpdateDeleteGetApiView.as_view(), name="user-detail"),
     path("users/", UsersListApiView.as_view(), name="users"),
+    path("users/count/", UserCountAPIView.as_view(), name="user-count"),
 ]

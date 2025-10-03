@@ -40,12 +40,13 @@ class ServiceCategoryListAPIView(FilterSearchMixin, ListAPIView):
 class MyServicesListApiView(ListAPIView):
     serializer_class = ServiceModelSerializer
     queryset = Service.objects.all()
-    permission_classes = IsProvider,IsAuthenticated
+    permission_classes = IsProvider, IsAuthenticated
 
     def get_queryset(self):
         qs = super().get_queryset()
 
         return qs.filter(owner=self.request.user)
+
 
 @extend_schema(tags=['Service'])
 class ServiceListCreateAPIView(FilterSearchMixin, ListCreateAPIView):
@@ -121,10 +122,11 @@ class ServiceDeleteUpdateGetAPIView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Service.objects.filter(is_deleted=False)
 
-    def perform_update(self, instance):
-        user = self.request.user
-        if instance.owner != user:
+    def perform_update(self, serializer):
+        instance = serializer.instance or self.get_object()
+        if instance.owner_id != self.request.user.id:
             raise PermissionDenied("You do not have permission to update this service.")
+        serializer.save()
 
     def perform_destroy(self, instance):
         user = self.request.user
@@ -174,5 +176,4 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
-
 

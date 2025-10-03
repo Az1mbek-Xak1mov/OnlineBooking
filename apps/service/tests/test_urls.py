@@ -318,4 +318,3 @@ def test_users_booking_history_url(client):
     response = client.post(url)
     assert response.request['REQUEST_METHOD'] == 'POST'
     assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_405_METHOD_NOT_ALLOWED]
-

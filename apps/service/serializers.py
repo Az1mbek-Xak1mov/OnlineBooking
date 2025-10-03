@@ -250,6 +250,107 @@ class BookingModelSerializer(ModelSerializer):
 
 
 class ServiceUpdateModelSerializer(ModelSerializer):
+    owner = HiddenField(default=CurrentUserDefault())
+    location = LocationModelSerializer(required=False)
+    schedules = ServiceScheduleSerializer(many=True , required=False)
+
     class Meta:
         model = Service
-        fields = ("id", "name", 'duration', "price", "description", "address", "capacity", "category",)
+        fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
+                   "location","schedules")
+    def update(self, instance, validated_data):
+        location_data = validated_data.pop("location", None)
+        schedules_data = validated_data.pop("schedules", None)
+
+        if not location_data:
+            raw_loc = self.initial_data.get('location')
+            if raw_loc and isinstance(raw_loc, str):
+                try:
+                    location_data = json.loads(raw_loc)
+                except Exception:
+                    location_data = {}
+
+        if not schedules_data:
+            raw_schedules = self.initial_data.get('schedules')
+            if raw_schedules and isinstance(raw_schedules, str):
+                s = raw_schedules.strip()
+                try:
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        schedules_data = parsed
+                    elif isinstance(parsed, dict):
+                        schedules_data = [parsed]
+                    else:
+                        schedules_data = []
+                except Exception:
+                    try:
+                        parsed = json.loads(f'[{s}]')
+                        if isinstance(parsed, list):
+                            schedules_data = parsed
+                        else:
+                            schedules_data = []
+                    except Exception:
+                        schedules_data = []
+                        if '},{' in s:
+                            parts = s.split('},{')
+                            for i, part in enumerate(parts):
+                                if i == 0:
+                                    candidate = part + '}'
+                                elif i == len(parts) - 1:
+                                    candidate = '{' + part
+                                else:
+                                    candidate = '{' + part + '}'
+                                try:
+                                    schedules_data.append(json.loads(candidate))
+                                except Exception:
+                                    pass
+                        if not schedules_data:
+                            for line in s.splitlines():
+                                line = line.strip().rstrip(',')
+                                if not line:
+                                    continue
+                                try:
+                                    schedules_data.append(json.loads(line))
+                                except Exception:
+                                    continue
+                        if not schedules_data:
+                            schedules_data = []
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if location_data:
+            try:
+                loc = instance.location
+            except Exception:
+                loc = getattr(instance, "location", None)
+            if loc and getattr(loc, "pk", None):
+                for k, v in location_data.items():
+                    setattr(loc, k, v)
+                loc.save()
+            else:
+                Location.objects.create(service=instance, **location_data)
+        if schedules_data:
+            for sch in schedules_data:
+                if not isinstance(sch, dict):
+                    continue
+                weekday = sch.get("weekday")
+                start_time = sch.get("start_time")
+                end_time = sch.get("end_time")
+                if not weekday or start_time is None or end_time is None:
+                    continue
+                weekday_normalized = str(weekday).lower()
+                existing = ServiceSchedule.objects.filter(service=instance, weekday=weekday_normalized).first()
+                if existing:
+                    existing.start_time = start_time
+                    existing.end_time = end_time
+                    existing.save(update_fields=["start_time", "end_time"])
+                else:
+                    ServiceSchedule.objects.create(
+                        service=instance,
+                        weekday=weekday_normalized,
+                        start_time=start_time,
+                        end_time=end_time
+                    )
+        return instance
