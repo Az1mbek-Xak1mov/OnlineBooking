@@ -131,6 +131,3 @@ class UsersListApiView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
     permission_classes = [IsModerator, IsAdmin]
-
-
-

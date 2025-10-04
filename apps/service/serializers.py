@@ -6,8 +6,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import (CurrentUserDefault, HiddenField, ImageField,
-                                   JSONField, ListField)
+from rest_framework.fields import (CurrentUserDefault, HiddenField, ImageField, ListField)
 from rest_framework.serializers import ModelSerializer, TimeField
 from service.models import (Booking, Location, Service, ServiceCategory,
                             ServiceImage, ServiceSchedule)
@@ -67,12 +66,12 @@ class ServiceModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     location = LocationModelSerializer(required=False)
     images = ListField(child=ImageField(), write_only=True)
-    schedules = ServiceScheduleSerializer(many=True , required=False)
+    schedules = ServiceScheduleSerializer(many=True, required=False)
 
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                  "images", "location","schedules")
+                  "images", "location", "schedules")
 
     def validate_duration(self, value):
         minutes = value.total_seconds() / 60
@@ -86,7 +85,7 @@ class ServiceModelSerializer(ModelSerializer):
     def create(self, validated_data):
         images_data = validated_data.pop("images", [])
         location_data = validated_data.pop("location", None)
-        schedules_data = validated_data.pop("schedules",  [])
+        schedules_data = validated_data.pop("schedules", [])
 
         if not location_data:
             raw_loc = self.initial_data.get('location')
@@ -275,12 +274,13 @@ class BookingModelSerializer(ModelSerializer):
 class ServiceUpdateModelSerializer(ModelSerializer):
     owner = HiddenField(default=CurrentUserDefault())
     location = LocationModelSerializer(required=False)
-    schedules = ServiceScheduleSerializer(many=True , required=False)
+    schedules = ServiceScheduleSerializer(many=True, required=False)
 
     class Meta:
         model = Service
         fields = ("id", "name", 'owner', 'duration', "price", "description", "address", "capacity", "category",
-                   "location","schedules")
+                  "location", "schedules")
+
     def update(self, instance, validated_data):
         location_data = validated_data.pop("location", None)
         schedules_data = validated_data.pop("schedules", None)

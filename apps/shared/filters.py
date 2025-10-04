@@ -12,5 +12,3 @@ class ServiceFilter(FilterSet):
     class Meta:
         model = Service
         fields = ["category", "min_price", "max_price", "created_at"]
-
-

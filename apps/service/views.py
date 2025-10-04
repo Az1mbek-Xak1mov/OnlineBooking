@@ -1,7 +1,5 @@
 from datetime import datetime, timezone
 
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-
 from service.mixins import FilterSearchMixin
 from service.models import Booking, Service, ServiceCategory
 from service.permissions import IsProvider
@@ -176,4 +174,3 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
-
