@@ -69,6 +69,6 @@ class ServiceModelAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = 'id', 'date', 'seats'
-    list_select_related = ['service', 'users']
+    list_select_related = ['service', 'user']
     list_filter = 'date',
     search_fields = 'user__name', 'date', 'service__name'
