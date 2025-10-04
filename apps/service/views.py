@@ -43,7 +43,7 @@ class MyServicesListApiView(ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        return qs.filter(owner=self.request.user)
+        return qs.filter(owner=self.request.user).order_by('id')
 
 
 @extend_schema(tags=['Service'])
