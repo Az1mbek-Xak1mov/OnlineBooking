@@ -157,6 +157,29 @@ class ServiceModelSerializer(ModelSerializer):
         to_repr['key'] = 'vali'
         return to_repr
 
+    def to_internal_value(self, data):
+        data = data.copy()
+
+        loc = data.get("location")
+        if isinstance(loc, str):
+            try:
+                data["location"] = json.loads(loc)
+            except json.JSONDecodeError:
+                raise ValidationError({
+                    "location": "Invalid JSON string"
+                })
+
+        sch = data.get("schedules")
+        if isinstance(sch, str):
+            try:
+                data["schedules"] = json.loads(sch)
+            except json.JSONDecodeError:
+                raise ValidationError({
+                    "schedules": "Invalid JSON string"
+                })
+
+        return super().to_internal_value(data)
+
 
 class BookingHistorySerializer(ModelSerializer):
     class Meta:

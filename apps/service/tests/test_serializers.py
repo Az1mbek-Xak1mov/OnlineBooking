@@ -1,11 +1,24 @@
+from datetime import time, timedelta
+
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.exceptions import ValidationError
+
+from service.models import ServiceCategory, ServiceSchedule, Service, Booking
+from service.serializers import ServiceScheduleSerializer, ServiceModelSerializer, BookingModelSerializer
 from users.models import RoleChange, User
 from users.serializers import (CustomTokenObtainPairSerializer,
                                MyRequestsModelSerializer,
                                RoleChangeModelSerializer, UserCreateSerializer,
                                UserModelSerializer, UserRegistrationSerializer,
                                VerifyOtpSerializer)
+
+VALID_IMAGE = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80'
+    b'\x00\x00\x00\x00\x00\xFF\xFF\xFF\x21\xF9\x04'
+    b'\x01\x00\x00\x00\x00\x2C\x00\x00\x00\x00\x01'
+    b'\x00\x01\x00\x00\x02\x02\x4C\x01\x00\x3B'
+)
 
 
 @pytest.mark.django_db
@@ -151,3 +164,226 @@ class TestMyRequestsModelSerializer:
         assert data["user"] == role_change.user.id
 
 
+@pytest.mark.django_db
+class TestServiceScheduleSerializer:
+    def test_valid_schedule(self):
+        data = {"weekday": "monday", "start_time": "10:00", "end_time": "12:00"}
+        ser = ServiceScheduleSerializer(data=data)
+        assert ser.is_valid(), ser.errors
+        assert ser.validated_data["start_time"].hour == 10
+
+    def test_invalid_equal_time(self):
+        data = {"weekday": "monday", "start_time": "10:00", "end_time": "10:00"}
+        ser = ServiceScheduleSerializer(data=data)
+        assert not ser.is_valid()
+        assert "start_time must be before end_time" in str(ser.errors)
+
+    def test_invalid_start_after_end(self):
+        data = {"weekday": "monday", "start_time": "12:00", "end_time": "10:00"}
+        ser = ServiceScheduleSerializer(data=data)
+        assert not ser.is_valid()
+        assert "start_time must be before end_time" in str(ser.errors)
+
+    def test_invalid_format(self):
+        data = {"weekday": "monday", "start_time": "12.00", "end_time": "13.00"}
+        ser = ServiceScheduleSerializer(data=data)
+        assert not ser.is_valid()
+        assert "start_time" in ser.errors or "end_time" in ser.errors
+
+
+@pytest.mark.django_db
+class TestServiceModelSerializer:
+    def setup_method(self):
+        self.user = User.objects.create_user(phone_number="998101001010", password="12345")
+        self.category = ServiceCategory.objects.create(name="Test Category")
+        self.context = {"request": type("Req", (), {"user": self.user})()}
+
+    def test_create_full_valid(self):
+        image = SimpleUploadedFile("test.jpg", VALID_IMAGE, content_type="image/jpeg")
+
+        data = {
+            "name": "Full Service",
+            "duration": "1:00:00",
+            "price": 10000,
+            "description": "desc",
+            "address": "Tashkent",
+            "capacity": 5,
+            "category": str(self.category.id),
+            "images": [image],
+            "location": {"lat": 41.3, "lng": 69.2, "name": "Center"},
+            "schedules": [
+                {"weekday": "monday", "start_time": "09:00", "end_time": "18:00"},
+                {"weekday": "tuesday", "start_time": "09:00", "end_time": "18:00"},
+            ],
+        }
+
+        ser = ServiceModelSerializer(data=data, context=self.context)
+        ser.initial_data = data
+        assert ser.is_valid(), ser.errors
+        instance = ser.save()
+
+        assert instance.images.count() == 1
+        assert instance.schedules.count() == 2
+        assert instance.location.name == "Center"
+
+    def test_invalid_duration(self):
+        data = {
+            "name": "Invalid Duration",
+            "duration": "0:07:00",
+            "price": 5000,
+            "description": "Bad",
+            "address": "Loc",
+            "capacity": 2,
+            "category": str(self.category.id),
+        }
+        ser = ServiceModelSerializer(data=data, context=self.context)
+        assert not ser.is_valid()
+        assert "Duration must be a positive multiple" in str(ser.errors)
+
+    def test_location_json_string(self):
+        image = SimpleUploadedFile("test.jpg", VALID_IMAGE, content_type="image/jpeg")
+        data = {
+            "name": "Test JSON loc",
+            "duration": "1:00:00",
+            "price": 10000,
+            "description": "desc",
+            "address": "Tashkent",
+            "capacity": 5,
+            "category": str(self.category.id),
+            "images": [image],
+        }
+        ser = ServiceModelSerializer(data=data, context=self.context)
+        ser.initial_data = {
+            **data,
+            "location": '{"lat": 41.0, "lng": 69.0, "name": "JSON Center"}'
+        }
+        assert ser.is_valid(), ser.errors
+        instance = ser.save()
+        assert instance.location.name == "JSON Center"
+
+    def test_schedules_as_string_list(self):
+        image = SimpleUploadedFile("test.jpg", VALID_IMAGE, content_type="image/jpeg")
+        data = {
+            "name": "StringSchedule",
+            "duration": "1:00:00",
+            "price": 10000,
+            "description": "desc",
+            "address": "Tashkent",
+            "capacity": 5,
+            "category": str(self.category.id),
+            "images": [image],
+        }
+        schedules_str = '[{"weekday": "monday", "start_time": "10:00", "end_time": "12:00"}]'
+        ser = ServiceModelSerializer(data=data, context=self.context)
+        ser.initial_data = {**data, "schedules": schedules_str}
+        assert ser.is_valid(), ser.errors
+        service = ser.save()
+        assert service.schedules.count() == 1
+
+
+@pytest.mark.django_db
+class TestBookingModelSerializer:
+    def setup_method(self):
+        self.user = User.objects.create_user(phone_number="998101001010", password="12345")
+        self.context = {"request": type("Req", (), {"user": self.user})()}
+
+    def _create_service_with_schedule(self, capacity=5):
+        category = ServiceCategory.objects.create(name="BookingCat")
+        service = Service.objects.create(
+            owner=self.user,
+            name="Service",
+            duration=timedelta(minutes=30),
+            price=10000,
+            description="desc",
+            address="address",
+            capacity=capacity,
+            category=category
+        )
+        ServiceSchedule.objects.create(
+            service=service,
+            weekday="monday",
+            start_time=time(9, 0),
+            end_time=time(18, 0)
+        )
+        return service
+
+    def test_valid_booking(self):
+        service = self._create_service_with_schedule()
+        data = {
+            "service": service.id,
+            "weekday": "monday",
+            "start_time": "10:00",
+            "duration": "0:30:00",
+            "seats": 2,
+        }
+        ser = BookingModelSerializer(data=data, context=self.context)
+        assert ser.is_valid(), ser.errors
+        booking = ser.save()
+        assert booking.seats == 2
+
+    def test_exceeds_capacity(self):
+        service = self._create_service_with_schedule(capacity=2)
+        Booking.objects.create(
+            user=self.user,
+            service=service,
+            weekday="monday",
+            start_time=time(10, 0),
+            end_time=time(10, 30),
+            seats=2
+        )
+
+        data = {
+            "service": service.id,
+            "weekday": "monday",
+            "start_time": "10:00",
+            "duration": "0:30:00",
+            "seats": 1,
+        }
+        ser = BookingModelSerializer(data=data, context=self.context)
+        assert ser.is_valid(), ser.errors
+        with pytest.raises(ValidationError) as excinfo:
+            ser.save()
+        assert "Not enough capacity" in str(excinfo.value)
+
+    def test_closed_time(self):
+        category = ServiceCategory.objects.create(name="ClosedCat")
+        service = Service.objects.create(
+            owner=self.user,
+            name="Closed",
+            duration=timedelta(minutes=30),
+            price=10000,
+            description="desc",
+            address="addr",
+            capacity=5,
+            category=category
+        )
+        ServiceSchedule.objects.create(
+            service=service,
+            weekday="monday",
+            start_time=time(9, 0),
+            end_time=time(10, 0)
+        )
+
+        data = {
+            "service": service.id,
+            "weekday": "monday",
+            "start_time": "11:00",
+            "duration": "0:30:00",
+            "seats": 1,
+        }
+        ser = BookingModelSerializer(data=data, context=self.context)
+        assert not ser.is_valid()
+        assert "Service is closed" in str(ser.errors)
+
+    def test_invalid_seats(self):
+        service = self._create_service_with_schedule()
+        data = {
+            "service": service.id,
+            "weekday": "monday",
+            "start_time": "09:00",
+            "duration": "0:30:00",
+            "seats": 0,
+        }
+        ser = BookingModelSerializer(data=data, context=self.context)
+        assert not ser.is_valid()
+        assert "Seats must be greater" in str(ser.errors)
