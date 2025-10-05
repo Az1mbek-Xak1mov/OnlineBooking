@@ -63,8 +63,6 @@ class ServiceModelAdmin(admin.ModelAdmin):
     list_filter = 'name', 'category__name'
     search_fields = 'name', 'category__name', 'address', 'price'
 
-    inlines = ServiceScheduleStackedInline,
-
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
