@@ -209,5 +209,3 @@ class TestServiceModels:
 
     def test_service_category_relation(self, service, category):
         assert service.category == category
-
-

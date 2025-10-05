@@ -5,5 +5,3 @@ urlpatterns = [
     path('auth/', include('users.urls')),
     path('stats/', include('stats.urls')),
 ]
-
-

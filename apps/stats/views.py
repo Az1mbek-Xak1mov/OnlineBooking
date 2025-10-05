@@ -7,6 +7,7 @@ from service.models import Service, Location
 from stats.serializers import LocationWithServiceSerializer
 from users.models import User
 
+
 @extend_schema(tags=['Stats'])
 class UserCountAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -15,6 +16,7 @@ class UserCountAPIView(APIView):
         total = User.objects.count()
         return Response({"count": total})
 
+
 @extend_schema(tags=['Stats'])
 class ServiceCountAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -22,6 +24,7 @@ class ServiceCountAPIView(APIView):
     def get(self, request, *args, **kwargs):
         total = Service.objects.count()
         return Response({"count": total})
+
 
 @extend_schema(tags=['Stats'])
 class ServiceLocationsAPIView(APIView):

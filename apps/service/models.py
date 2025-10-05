@@ -46,6 +46,7 @@ class Location(CreatedBaseModel):
 class ServiceCategory(CreatedBaseModel):
     name = CharField(max_length=255, unique=True)
     icon = URLField()
+
     class Meta:
         verbose_name = 'ServiceCategory'
         verbose_name_plural = 'ServiceCategories'
@@ -214,5 +215,3 @@ class Demand(CreatedBaseModel):
         CASCADE,
         related_name="demands")
     main_text = TextField(blank=True)
-
-

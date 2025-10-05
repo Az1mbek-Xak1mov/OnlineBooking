@@ -16,5 +16,3 @@ urlpatterns = [
     path("users/booking/history/", UserBookingHistoryListAPIView.as_view(), name="users-booking-history"),
 
 ]
-
-
