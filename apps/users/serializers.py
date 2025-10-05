@@ -118,3 +118,33 @@ class MyRequestsModelSerializer(ModelSerializer):
     class Meta:
         model = RoleChange
         fields = '__all__'
+
+
+class ConfirmPhoneNumberSerializer(Serializer):
+    phone_number = CharField(max_length=12)
+    def validate_phone_number(self, value):
+        clean_phone_number = re.sub(r"\D", "", value)
+        if not User.objects.filter(phone_number=clean_phone_number).exists():
+            raise ValidationError("Not registered phone number!")
+        return value
+
+
+class VerifyOtpSetPasswordSerializer(Serializer):
+    phone_number = CharField(write_only=True)
+    otp_code = CharField(write_only=True)
+    new_password = CharField(write_only=True)
+    new_password_confirm = CharField(write_only=True)
+
+    def validate_phone_number(self, value):
+        clean = re.sub(r"\D", "", value)
+        if not User.objects.filter(phone_number=clean).exists():
+            raise ValidationError("Phone number not registered.")
+        return clean
+
+    def validate(self, attrs):
+        new = attrs.get("new_password")
+        confirm = attrs.get("new_password_confirm")
+        if new != confirm:
+            raise ValidationError({"new_password_confirm": "Passwords do not match."})
+
+        return attrs

@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 
 from service.mixins import FilterSearchMixin
-from service.models import Booking, Service, ServiceCategory
+from service.models import Booking, Service, ServiceCategory, ServiceImage
 from service.permissions import IsProvider
 from service.serializers import (BookingHistorySerializer, BookingModelSerializer,
                                  ServiceCategoryModelSerializer,
                                  ServiceModelSerializer,
-                                 ServiceUpdateModelSerializer)
+                                 ServiceUpdateModelSerializer, ServiceImageModelSerializer)
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -15,7 +15,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import (CreateAPIView, ListAPIView,
                                      ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
-                                     get_object_or_404)
+                                     get_object_or_404, DestroyAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -174,3 +174,35 @@ class UserBookingHistoryListAPIView(FilterSearchMixin, ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(user=self.request.user)
+
+
+@extend_schema(tags=['ServiceImage'])
+class ServiceImageListCreateAPIView(ListCreateAPIView):
+    serializer_class = ServiceImageModelSerializer
+    permission_classes = (IsProvider,)
+
+    def get_queryset(self):
+        service_id = self.kwargs["pk"]
+        return ServiceImage.objects.filter(service_id=service_id)
+
+    def perform_create(self, serializer):
+        service = get_object_or_404(Service, pk=self.kwargs["pk"])
+        if service.owner_id != self.request.user.id:
+            raise PermissionDenied()
+        serializer.save(service=service)
+
+
+@extend_schema(tags=['ServiceImage'])
+class ServiceImageDestroyAPIView(DestroyAPIView):
+    serializer_class = ServiceImageModelSerializer
+    permission_classes = (IsProvider,)
+    lookup_url_kwarg = "image_pk"
+
+    def get_queryset(self):
+        service_id = self.kwargs["service_pk"]
+        return ServiceImage.objects.filter(service_id=service_id)
+
+    def perform_destroy(self, instance):
+        if instance.service.owner_id != self.request.user.id:
+            raise PermissionDenied()
+        instance.delete()

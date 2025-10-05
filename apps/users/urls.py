@@ -2,7 +2,8 @@ from django.urls import path
 from users.views import (CustomTokenObtainPairView, CustomTokenRefreshView,
                          GetMeView, MyRequestsListAPIView, RegisterApiView,
                          RoleChangeCrateAPIView, UsersListApiView,
-                         UserUpdateDeleteGetApiView, VerifyPhoneNumberAPIView)
+                         UserUpdateDeleteGetApiView, VerifyPhoneNumberAPIView, VerifyPhoneAndSetPasswordAPIView,
+                         ConfirmPhoneNumberApiView)
 
 urlpatterns = [
     path('registration/', RegisterApiView.as_view(), name='register'),
@@ -16,4 +17,7 @@ urlpatterns = [
     path('my-requests/', MyRequestsListAPIView.as_view(), name='my-requests'),
     path("users/<uuid:pk>", UserUpdateDeleteGetApiView.as_view(), name="user-detail"),
     path("users/", UsersListApiView.as_view(), name="users"),
+    path('registration/update_passwod/' , VerifyPhoneAndSetPasswordAPIView.as_view(), name='forgot-password'),
+    path('registration/forgot_password/' , ConfirmPhoneNumberApiView.as_view(), name='forgot-password'),
+
 ]

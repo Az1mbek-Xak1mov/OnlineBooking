@@ -1,7 +1,7 @@
 from service.views import (BookingCreateAPIView, MyServicesListApiView,
                            PendingBookingListAPIView, ServiceCategoryListAPIView,
                            ServiceDeleteUpdateGetAPIView, ServiceListCreateAPIView,
-                           UserBookingHistoryListAPIView)
+                           UserBookingHistoryListAPIView, ServiceImageListCreateAPIView, ServiceImageDestroyAPIView)
 from django.urls import path
 
 urlpatterns = [
@@ -15,4 +15,6 @@ urlpatterns = [
     path("users/booking/pending/", PendingBookingListAPIView.as_view(), name="users-booking-history-pending"),
     path("users/booking/history/", UserBookingHistoryListAPIView.as_view(), name="users-booking-history"),
 
+    path("services/<uuid:pk>/images/", ServiceImageListCreateAPIView.as_view()),
+    path("services/<uuid:service_pk>/images/<uuid:image_pk>/", ServiceImageDestroyAPIView.as_view(), name="service-image-destroy"),
 ]

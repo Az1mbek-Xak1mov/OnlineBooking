@@ -377,3 +377,4 @@ class ServiceUpdateModelSerializer(ModelSerializer):
                         end_time=end_time
                     )
         return instance
+

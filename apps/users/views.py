@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from service.permissions import IsAdmin, IsModerator
 from users.models import RoleChange, User
 from users.serializers import (CustomTokenObtainPairSerializer,
@@ -6,7 +8,7 @@ from users.serializers import (CustomTokenObtainPairSerializer,
                                UserCreateSerializer,
                                UserModelSerializer,
                                UserRegistrationSerializer,
-                               VerifyOtpSerializer)
+                               VerifyOtpSerializer, ConfirmPhoneNumberSerializer, VerifyOtpSetPasswordSerializer)
 from users.utils import OtpService, generate_code
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -131,3 +133,60 @@ class UsersListApiView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
     permission_classes = [IsModerator, IsAdmin]
+
+
+@extend_schema(tags=['Auth'])
+class ConfirmPhoneNumberApiView(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = ConfirmPhoneNumberSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        phone_number = serializer.validated_data['phone_number']
+        otp_service = OtpService()
+
+        success, ttl = otp_service.save_user_temp(phone_number, serializer.validated_data)
+        if not success:
+            return Response(
+                {"detail": f"Try again after {ttl} seconds."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        code = generate_code()
+        print(code)
+        otp_service.send_otp(phone_number, code, purpose="register")
+
+        return Response(
+            {"detail": "OTP code sent."},
+            status=status.HTTP_201_CREATED
+        )
+
+
+
+@extend_schema(tags=['Auth'])
+class VerifyPhoneAndSetPasswordAPIView(CreateAPIView):
+    serializer_class = VerifyOtpSetPasswordSerializer
+    authentication_classes = ()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data["phone_number"]
+        otp_code = serializer.validated_data["otp_code"]
+        new_password = serializer.validated_data["new_password"]
+
+        otp_service = OtpService()
+        valid, _ = otp_service.verify_otp(phone, otp_code, purpose="register")
+
+        if not valid:
+            return Response({"detail": "Invalid or expired OTP code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, phone_number=phone)
+        user.set_password(new_password)
+        user.save()
+
+        otp_service.delete_otp(phone)
+
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)

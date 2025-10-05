@@ -34,3 +34,4 @@ class ServiceLocationsAPIView(APIView):
         qs = Location.objects.select_related('service').all()
         serializer = LocationWithServiceSerializer(qs, many=True)
         return Response(serializer.data)
+
