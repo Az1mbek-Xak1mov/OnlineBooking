@@ -10,6 +10,7 @@ from users.models import User
 
 @extend_schema(tags=['Stats'])
 class UserCountAPIView(APIView):
+    serializer_class = None  # Add explicit serializer_class for schema generation
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -19,6 +20,7 @@ class UserCountAPIView(APIView):
 
 @extend_schema(tags=['Stats'])
 class ServiceCountAPIView(APIView):
+    serializer_class = None  # Add explicit serializer_class for schema generation
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -28,6 +30,7 @@ class ServiceCountAPIView(APIView):
 
 @extend_schema(tags=['Stats'])
 class ServiceLocationsAPIView(APIView):
+    serializer_class = None  # Add explicit serializer_class for schema generation
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):

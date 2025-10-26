@@ -184,7 +184,12 @@ class ServiceImageListCreateAPIView(ListCreateAPIView):
     permission_classes = (IsProvider,)
 
     def get_queryset(self):
-        service_id = self.kwargs["pk"]
+        # Fix for drf-spectacular schema generation
+        if getattr(self, "swagger_fake_view", False):
+            return ServiceImage.objects.none()
+        service_id = self.kwargs.get("pk")
+        if not service_id:
+            return ServiceImage.objects.none()
         return ServiceImage.objects.filter(service_id=service_id)
 
     def perform_create(self, serializer):
@@ -214,6 +219,9 @@ class ListBookingsForOwnerAPIView(ListAPIView):
     serializer_class = BookingSerializer
     permission_classes = (IsAuthenticated,IsProvider)
     def get_queryset(self):
+        # Fix for drf-spectacular schema generation
+        if getattr(self, "swagger_fake_view", False):
+            return Booking.objects.none()
         service = Service.objects.filter(owner_id=self.request.user.id).first()
         if service:
             return Booking.objects.filter(service_id=service.id)
