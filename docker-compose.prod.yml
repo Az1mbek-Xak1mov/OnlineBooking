@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  web:
+    image: ${DOCKER_REGISTRY:-ghcr.io/${GITHUB_REPOSITORY}}/${IMAGE_NAME:-onlinebooking}:$${IMAGE_TAG:-latest}
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - media_vol:/app/media
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-onlinebooking}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  media_vol:
+  pg_data:
