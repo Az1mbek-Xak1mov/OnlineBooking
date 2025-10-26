@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import (CurrentUserDefault, HiddenField, ImageField, ListField)
-from rest_framework.serializers import ModelSerializer, TimeField
+from rest_framework.serializers import ModelSerializer, TimeField, Serializer
 from service.models import (Booking, Location, Service, ServiceCategory,
                             ServiceImage, ServiceSchedule)
 
@@ -378,3 +378,8 @@ class ServiceUpdateModelSerializer(ModelSerializer):
                     )
         return instance
 
+
+class BookingSerializer(ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = "__all__"

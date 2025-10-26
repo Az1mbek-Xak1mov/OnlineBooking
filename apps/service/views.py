@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 
+from starlette.responses import JSONResponse
+
 from service.mixins import FilterSearchMixin
 from service.models import Booking, Service, ServiceCategory, ServiceImage
 from service.permissions import IsProvider
 from service.serializers import (BookingHistorySerializer, BookingModelSerializer,
                                  ServiceCategoryModelSerializer,
                                  ServiceModelSerializer,
-                                 ServiceUpdateModelSerializer, ServiceImageModelSerializer)
+                                 ServiceUpdateModelSerializer, ServiceImageModelSerializer, BookingSerializer)
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -206,3 +208,13 @@ class ServiceImageDestroyAPIView(DestroyAPIView):
         if instance.service.owner_id != self.request.user.id:
             raise PermissionDenied()
         instance.delete()
+
+@extend_schema(tags=['Booking-Service'])
+class ListBookingsForOwnerAPIView(ListAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = (IsAuthenticated,IsProvider)
+    def get_queryset(self):
+        service = Service.objects.filter(owner_id=self.request.user.id).first()
+        if service:
+            return Booking.objects.filter(service_id=service.id)
+        return Booking.objects.none()

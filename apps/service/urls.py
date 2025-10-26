@@ -1,7 +1,8 @@
 from service.views import (BookingCreateAPIView, MyServicesListApiView,
                            PendingBookingListAPIView, ServiceCategoryListAPIView,
                            ServiceDeleteUpdateGetAPIView, ServiceListCreateAPIView,
-                           UserBookingHistoryListAPIView, ServiceImageListCreateAPIView, ServiceImageDestroyAPIView)
+                           UserBookingHistoryListAPIView, ServiceImageListCreateAPIView, ServiceImageDestroyAPIView,
+                           ListBookingsForOwnerAPIView)
 from django.urls import path
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
 
     path("services/<uuid:pk>/images/", ServiceImageListCreateAPIView.as_view()),
     path("services/<uuid:service_pk>/images/<uuid:image_pk>/", ServiceImageDestroyAPIView.as_view(), name="service-image-destroy"),
+    path("services/individual/", ListBookingsForOwnerAPIView.as_view(), name="owner-service"),
 ]

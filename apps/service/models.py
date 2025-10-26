@@ -82,7 +82,6 @@ class Service(CreatedBaseModel):
     price = PositiveIntegerField()
     description = TextField(blank=True, null=True)
     is_deleted = BooleanField(default=False)
-
     objects = ServiceManager.from_queryset(ServiceQuerySet)()
 
     class Meta:

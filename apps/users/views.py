@@ -165,6 +165,7 @@ class ConfirmPhoneNumberApiView(CreateAPIView):
 
 
 
+
 @extend_schema(tags=['Auth'])
 class VerifyPhoneAndSetPasswordAPIView(CreateAPIView):
     serializer_class = VerifyOtpSetPasswordSerializer
