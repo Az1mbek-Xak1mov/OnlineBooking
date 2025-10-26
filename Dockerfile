@@ -11,8 +11,10 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv pip install --system psycopg2-binary gunicorn && \
-    uv sync
+RUN uv run python -m ensurepip && \
+    uv run python -m pip install --upgrade pip setuptools wheel && \
+    uv run python -m pip install psycopg2-binary gunicorn && \
+    uv sync --frozen --no-install-project
 
 COPY . .
 
