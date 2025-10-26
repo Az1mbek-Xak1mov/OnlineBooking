@@ -1,18 +1,19 @@
 FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
+RUN apk add --no-cache \
+    postgresql-dev \
+    gcc \
+    python3-dev \
+    musl-dev \
+    libffi-dev
+
 WORKDIR /app
 
-# Copy project and install pinned dependencies via uv (reads uv.lock / pyproject.toml)
-COPY . /app
-RUN uv sync
+COPY pyproject.toml uv.lock ./
 
-# Ensure entrypoint exists and is executable
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN uv pip install --system psycopg2-binary gunicorn && \
+    uv sync
 
-EXPOSE 8000
+COPY . .
 
-ENV DJANGO_SETTINGS_MODULE=root.settings
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uv", "run", "gunicorn", "root.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["uv", "run", "gunicorn", "root.wsgi:application", "--bind", "0:8000"]

@@ -4,13 +4,11 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from root import settings
-from root.health import health_check
 
 urlpatterns = [
   path('admin/', admin.site.urls),
   path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
   path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-  path('health/', health_check, name='health_check'),
 
   path('api/v1/', include('apps.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
