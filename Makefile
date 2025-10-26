@@ -20,3 +20,9 @@ compile:
 	pybabel compile -d locales -D messages
 update:
 	pybabel update -d locales -D messages -i locales/messages.pot
+
+pytest:
+	pytest .
+
+fake-data:
+	python manage.py adds --all

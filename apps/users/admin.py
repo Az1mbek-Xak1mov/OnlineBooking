@@ -60,7 +60,7 @@ class RoleChangeAdmin(admin.ModelAdmin):
     list_display = ("user", "short_message", "is_read", "is_accepted", "created_at")
     list_filter = ("is_read", "is_accepted", "created_at")
     search_fields = ("user__phone_number", "user__first_name", "user__last_name", "message")
-    ordering = ("is_read", "-created_at")
+    ordering = ('-is_accepted', "is_read")
     actions = ["mark_as_read"]
 
     def get_object(self, request, object_id, from_field=None):
@@ -87,3 +87,4 @@ class RoleChangeAdmin(admin.ModelAdmin):
         return f"{obj.message[:30]}..." if len(obj.message) > 30 else obj.message
 
     short_message.short_description = "Message"
+
