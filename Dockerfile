@@ -18,4 +18,9 @@ RUN uv run python -m ensurepip && \
 
 COPY . .
 
+# copy and enable entrypoint script
+COPY deploy/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["uv", "run", "gunicorn", "root.wsgi:application", "--bind", "0:8000"]
