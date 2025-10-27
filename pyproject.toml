@@ -27,6 +27,7 @@ dependencies = [
     "pillow>=11.3.0",
     "psycopg2-binary>=2.9.10",
     "whitenoise>=6.5.0",
+    "django-cors-headers>=4.0.0",
     "pytest-django>=4.11.1",
     "pytz>=2025.2",
     "qrcode>=8.2",
