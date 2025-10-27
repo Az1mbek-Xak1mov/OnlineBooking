@@ -11,13 +11,24 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-j9yq_(faev4re6(d_lw6)u#9z@om-)d_ef&7ye#gtdhk&&0$6p')
+SECRET_KEY = 'django-insecure-j9yq_(faev4re6(d_lw6)u#9z@om-)d_ef&7ye#gtdhk&&0$6p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = True
 
-# Read allowed hosts from environment (comma separated) or fallback to localhost
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',') if os.getenv('ALLOWED_HOSTS') else ['localhost']
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://joy-ol.uz',
+    'http://joy-ol.uz',
+]
+
+# Security Settings
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -60,6 +71,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'root.urls'
 AUTH_USER_MODEL = 'users.User'
